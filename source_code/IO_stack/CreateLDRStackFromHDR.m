@@ -1,25 +1,46 @@
-function [stack, stack_exposure] = GenerateExposureBracketing( img, fstopDistance, geb_gamma, geb_mode )
+function [stack, stack_exposure] = CreateLDRStackFromHDR( img, fstopDistance, geb_mode, lin_type, lin_fun)
 %
 %
-%       stack = GenerateExposureBracketing( img )
+%       stack = CreateLDRStackFromHDR( img )
 %       
 %
 %        Input:
 %           -img: input HDR image
 %           -fstopDistance: delta f-stop for generating exposures
-%           -geb_gamma: the gamma for encoding the images
-%           -geb_mode: how to samples the image.
+%           -geb_mode: how to samples the image:
 %                  - if geb_mode = 'uniform', exposures are sampled
 %                    in an uniform way
 %                  - if geb_mode = 'histogram', exposures are sampled using
 %                    the histogram using a greedy approach
+%                  - if geb_mode = 'selected', we assume that fstopDistance
+%                  is an array with the f-stops selected
+%
+%           -lin_type: the linearization function:
+%                      - 'linear': images are already linear
+%                      - 'gamma': gamma function is used for linearization;
+%                      - 'sRGB': images are encoded using sRGB
+%                      - 'LUT': the lineraziation function is a look-up
+%                               table defined stored as an array in the 
+%                               lin_fun 
+%                      - 'poly': the lineraziation function is a polynomial
+%                               stored in lin_fun
+%
+%           -lin_fun: it is the camera response function data of the camera 
+%           that took the pictures in the stack. Depending on lin_type:
+%                   - 'gamma': this is a single value; i.e. the gamma
+%                   value.
+%                   - 'sRGB': this value is empty or can be omitted
+%                   - 'linear': this value can be empty or can be omitted
+%                   - 'LUT': this value has to be a $n \times col$ array 
+%                   - 'poly': this values has to be a $n \times col$ array
+%                   that encodes a polynomial 
 %
 %        Output:
 %           -stack: a stack of LDR images
 %           -stack_exposure: exposure values of the stack (stored as time
 %           in seconds)
 % 
-%     Copyright (C) 2010-15 Francesco Banterle
+%     Copyright (C) 2016 Francesco Banterle
 %  
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -41,15 +62,18 @@ if(~exist('fstopDistance', 'var'))
     fstopDistance = 1;
 end
 
-%inverse gamma
-if(~exist('geb_gamma', 'var'))
-    inv_gamma = 1.0 / 2.2;
-else
-    inv_gamma = 1.0 / geb_gamma;
-end
-
 if(~exist('geb_mode', 'var'))
     geb_mode = 'histogram';
+end
+
+%is the linearization type of the images defined?
+if(~exist('lin_type', 'var'))
+    lin_type = 'gamma';
+end
+
+%do we have the inverse camera response function?
+if(~exist('lin_fun', 'var'))
+    lin_fun = 2.2;
 end
 
 %luminance channel
@@ -70,6 +94,9 @@ switch(geb_mode)
         tMin = -(minExposure + 1);
         stack_exposure = 2.^(tMin:fstopDistance:tMax);
         
+    case 'selected'
+        stack_exposure = 2.^fstopDistance;
+        
     otherwise
         error('ERROR: wrong mode for sampling the HDR image');
 end
@@ -80,7 +107,8 @@ stack = zeros(r, c, col, n);
 
 %calculate exposures
 for i=1:n
-    expo = ClampImg((stack_exposure(i) * img).^inv_gamma, 0, 1);
+    img_e = (stack_exposure(i) * img);
+    expo = ClampImg(ApplyCRF(img_e, lin_type, lin_fun), 0, 1);
     stack(:,:,:,i) = expo;
 end
 

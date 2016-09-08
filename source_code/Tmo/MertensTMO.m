@@ -78,7 +78,7 @@ if(~isempty(img))
     %Convert the HDR image into a imageStack
     checkNegative(img);
 
-    [imageStack, ~] = GenerateExposureBracketing(img, 1);
+    [imageStack, ~] = CreateLDRStackFromHDR(img, 1);
 else
     if(isempty(imageStack))
         imageStack = ReadLDRStack(folder_name, format, 1);

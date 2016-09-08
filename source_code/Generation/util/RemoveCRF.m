@@ -27,12 +27,12 @@ function imgOut = RemoveCRF(img, lin_type, lin_fun)
 
 %is the linearization type of the images defined?
 if(~exist('lin_type', 'var'))
-    lin_type = 'gamma2.2';
+    lin_type = 'gamma';
 end
 
 %do we have the inverse camera response function?
 if(~exist('lin_fun', 'var'))
-    lin_fun = [];
+    lin_fun = 2.2;
 end
 
 %linearization of the image

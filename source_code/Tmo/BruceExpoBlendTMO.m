@@ -59,10 +59,10 @@ if(~exist('beb_R', 'var'))
 end
 
 if(~isempty(img))
+    %Convert the HDR image into a imageStack    
     checkNegative(img);
     
-    %Convert the HDR image into a imageStack
-    [imageStack, ~] = GenerateExposureBracketing(img, 1);
+    [imageStack, ~] = CreateLDRStackFromHDR(img, 1);
 else
     if(isempty(imageStack))
         imageStack = double(ReadLDRStack(folder_name, format, 1));
