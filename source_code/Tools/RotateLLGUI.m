@@ -33,6 +33,12 @@ hold on;
 
 [r, c, col] = size(img);
 
+r_h = round(r / 2);
+line([1, c], [r_h, r_h], 'Color', 'r', 'LineWidth', 4);
+
+
+
+
 [x0, y0] = ginput(1);
 
 plot(x0, y0, 'r+');
@@ -51,7 +57,12 @@ phir1   = ( (r/2 - y1) / r ) * pi * 0.5;
 
 vecr1 = PolarVec3(thetar1, phir1);
 
-q = getQuaternion(cross(vec1, vecr1), acos(dot(vec1, vecr1)));
+sign = -1.0;
+if(x0 > x1)
+    sign = 1.0;
+end
+
+q = getQuaternion(cross(vec1, vecr1), sign * acos(dot(vec1, vecr1)));
 
 M = RotationMatrixFromQuaternion(q);
 
