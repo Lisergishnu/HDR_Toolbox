@@ -1,13 +1,15 @@
-function scale = FindChromaticyScale(M, I)
+function imgOut = RotateYLL(img, angle)
 %
-%       scale = FindChromaticyScale(M, I)
+%        imgOut = RotateYLL(img, angle)
 %
+%        This function rotates an environment map encoded with LL encoding
+%        by an angle (degrees) around Y axis.
 %
 %        Input:
-%
-%
+%           -img: an environment map encoded with LL encoding
+%           -angle: rotation angle (degrees) around Y axis
 %        Output:
-%
+%           -imgOut: img rotated by angle around Y axis
 %
 %     Copyright (C) 2016 Francesco Banterle
 % 
@@ -25,27 +27,8 @@ function scale = FindChromaticyScale(M, I)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-l_m = length(M);
-l_I = length(I);
+cols = size(img, 2);
 
-if((l_m ~= l_I) || isempty(M) || isempty(I))
-    error('FindChromaticyScale: input colors have different color channels.');
-end
-
-
-    function err = residualFunction(p)
-        
-        I_c = I .* p;
-
-        I_c_n = I_c / norm(I_c);
-        M_n = M / norm(M);
-
-        err = sum((I_c_n - M_n).^2);
-    end
-
-    opts = optimset('Display', 'none', 'TolFun', 1e-8, 'TolX', 1e-8);
-    scale = fminsearch(@residualFunction, ones(1, l_m), opts);
-
-
+imgOut = imShiftWrap(img, (angle * cols) / 360);
 
 end

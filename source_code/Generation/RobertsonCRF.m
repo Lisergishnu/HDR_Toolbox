@@ -154,19 +154,19 @@ if(bNormalize)
     lin_fun = ClampImg(lin_fun, 0.0, 1.0);
 end
 
-%poly-fit (rational)
-if(bPolyFit)
-    ft = fittype( 'rat33' );
-    opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
-    opts.Display = 'Off';
-    opts.StartPoint = ones(7, 1);
-
-    for i=1:col    
-        [xData, yData] = prepareCurveData(x', lin_fun(:,i));
-        [fit_ret, ~] = fit( xData, yData, ft, opts );    
-        lin_fun(:,i) = feval(fit_ret, x');
-    end
-end
+% %poly-fit (rational)
+% if(bPolyFit)
+%     ft = fittype( 'rat33' );
+%     opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
+%     opts.Display = 'Off';
+%     opts.StartPoint = ones(7, 1);
+% 
+%     for i=1:col    
+%         [xData, yData] = prepareCurveData(x', lin_fun(:,i));
+%         [fit_ret, ~] = fit( xData, yData, ft, opts );    
+%         lin_fun(:,i) = feval(fit_ret, x');
+%     end
+% end
 
 end
 
