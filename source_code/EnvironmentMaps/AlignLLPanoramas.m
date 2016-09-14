@@ -4,8 +4,8 @@ function [img1_rot, rot, err] = AlignLLPanoramas(img1, img2, bVisualization)
 %     [imgRot, rot, err] = AlignLLPanoramas(img1, img2, bVisualization)
 %
 %     This function finds the rotation around Y-axis in pixel for aligning
-%     the panorma img1 (in longitutde-latittude format) to the panorma
-%     img2 (in longitutde-latittude format).
+%     the panorma img1 (in longitude-latitude format) to the panorma
+%     img2 (in longitude-latitude format).
 %
 %     Input:
 %       -img1: unaligned image
@@ -19,7 +19,7 @@ function [img1_rot, rot, err] = AlignLLPanoramas(img1, img2, bVisualization)
 %       -err: matching error
 %       -img1_rot: img1 rotated to be aligned to img2
 %
-%     Copyright (C) 2012-15  Francesco Banterle
+%     Copyright (C) 2012-16  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -39,12 +39,13 @@ if(~exist('bVisualization', 'var'))
     bVisualization = 0;
 end
 
-r = size(img1, 1);
 c = size(img1, 2);
 
 %Calculate the descriptor
-img1_tmo = ReinhardTMO(img1);
-img2_tmo = ReinhardTMO(img2);
+Lwa_ext = (logMean(lum(img1)) + logMean(lum(img2))) / 2.0;
+
+img1_tmo = ReinhardTMO(img1, 0.15, 1e9, 'global', [], Lwa_ext);
+img2_tmo = ReinhardTMO(img2, 0.15, 1e9, 'global', [], Lwa_ext);
 
 line1 = LLDescriptor(img1_tmo, 1)';
 line2 = LLDescriptor(img2_tmo, 1)';
