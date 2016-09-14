@@ -30,7 +30,7 @@ function imgOut = BilateralNoiseRemoval(img, sigma_s, sigma_r)
 
 col = size(img,3);
 
-if(~exist('sigma_s','var'))
+if(~exist('sigma_s', 'var'))
     sigma_r = 4;
 end
 
@@ -38,11 +38,11 @@ if(sigma_s<4)
     sigma_s = 4;
 end
 
-if(~exist('sigma_r','var'))
+if(~exist('sigma_r', 'var'))
     sigma_r = 0.01;
 end
 
-if(sigma_r<=0.0)
+if(sigma_r <= 0.0)
     sigma_r = 0.01;
 end
 
@@ -50,30 +50,34 @@ switch col
 	case 1
     	minC = min(img(:));
         maxC = max(img(:));
-        img = (img-minC)/(maxC-minC);
-        imgOut = bilateralFilter(img,[],0.0,1.0,sigma_s,sigma_r)*(maxC-minC)+minC;
+        delta = (maxC - minC);        
+        img = (img - minC) / delta;
+        imgOut = bilateralFilter(img, [], 0.0, 1.0, sigma_s, sigma_r) * delta + minC;
             
     case 3
-        imgLab = ConvertXYZtoCIELab(ConvertRGBtoXYZ(img,0),0);
+        imgLab = ConvertXYZtoCIELab(ConvertRGBtoXYZ(img, 0), 0);
             
         for i=1:col
             tmp = imgLab(:,:,i);
             minC = min(tmp(:));
             maxC = max(tmp(:));
-            tmp = (tmp-minC)/(maxC-minC);
-            imgLab(:,:,i) = bilateralFilter(tmp,[],0.0,1.0,sigma_s,sigma_r)*(maxC-minC)+minC;
+            delta = (maxC - minC);            
+            tmp = (tmp - minC) / delta;
+            imgLab(:,:,i) = bilateralFilter(tmp,[], 0.0, 1.0,sigma_s,sigma_r) * delta + minC;
         end
             
         imgOut = ConvertRGBtoXYZ(ConvertXYZtoCIELab(imgLab,1),1);
             
     otherwise
         imgOut = zeros(size(img));
+        
         for i=1:col
             tmp = img(:,:,i);
             minC = min(tmp(:));
             maxC = max(tmp(:));
-            tmp = (tmp-minC)/(maxC-minC);
-            imgOut(:,:,i) = bilateralFilter(tmp,[],0.0,1.0,sigma_s,sigma_r)*(maxC-minC)+minC;
+            delta = (maxC - minC);
+            tmp = (tmp - minC) / delta;
+            imgOut(:,:,i) = bilateralFilter(tmp, [], 0.0, 1.0,sigma_s, sigma_r) * delta + minC;
         end
 end
 

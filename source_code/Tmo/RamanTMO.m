@@ -20,7 +20,7 @@ function imgOut = RamanTMO( img, folder_name, format, imageStack)
 %        Note: Gamma correction is not needed because it works on gamma
 %        corrected images.
 % 
-%     Copyright (C) 2012-15  Francesco Banterle
+%     Copyright (C) 2012-16  Francesco Banterle
 %
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -48,9 +48,9 @@ end
 
 if(~isempty(img))
     %Convert the HDR image into a imageStack
-    check3Color(img);
+    checkNegative(img);
 
-    [imageStack, ~] = GenerateExposureBracketing(img, 1);
+    [imageStack, ~] =  CreateLDRStackFromHDR(img, 1);
 else
     if(isempty(imageStack))
         imageStack = double(ReadLDRStack(folder_name, format, 1));    

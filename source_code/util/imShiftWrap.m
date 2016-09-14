@@ -37,13 +37,13 @@ end
 
 imgOut = zeros(size(img));
 
-if(abs(isw_dx)>0)
-    if(isw_dx>0)
-        imgOut(:,(isw_dx+1):end,:) = img(:,1:(end-isw_dx),:);
-        imgOut(:,1:isw_dx,:)       = img(:,(end-isw_dx+1):end,:);
+if(abs(isw_dx) > 0)
+    if(isw_dx > 0)
+        imgOut(:,(isw_dx + 1):end,:) = img(:,1:(end - isw_dx),:);
+        imgOut(:,1:isw_dx,:)       = img(:,(end - isw_dx + 1):end,:);
     else
-        imgOut(:,1:(end+isw_dx),:)     = img(:,(1-isw_dx):end,:);    
-        imgOut(:,(end+isw_dx+1):end,:) = img(:,1:(-isw_dx),:);    
+        imgOut(:,1:(end + isw_dx),:)     = img(:,(1 - isw_dx):end,:);    
+        imgOut(:,(end + isw_dx + 1):end,:) = img(:,1:( -isw_dx),:);    
     end
 else
     imgOut = img;

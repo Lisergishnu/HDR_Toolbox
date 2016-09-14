@@ -40,10 +40,15 @@ dMM = (bound(2) - bound(1)) / nBin;
 removingBins = round((4.0 - eh_overlap) / dMM);
 
 fstops = [];
+iter = 1;
 while(sum(histo) > 0)
     [~, ind] = max(histo);
     indMin = max([(ind - removingBins), 1]);
     indMax = min([(ind + removingBins), nBin]);
+   
+%     figure(iter);
+%     bar(histo);
+    iter = iter + 1;
     histo(indMin:indMax) = 0;
     fstops = [fstops, (-(ind * dMM + bound(1)) - 1.0)];
 end
