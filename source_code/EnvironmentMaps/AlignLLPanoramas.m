@@ -1,7 +1,7 @@
 function [img1_rot, rot, err] = AlignLLPanoramas(img1, img2, bVisualization)
 %
 %
-%     [imgRot, rot, err] = AlignLLPanoramas(img1, img2, bVisualization)
+%     [img1_rot, rot, err] = AlignLLPanoramas(img1, img2, bVisualization)
 %
 %     This function finds the rotation around Y-axis in pixel for aligning
 %     the panorma img1 (in longitude-latitude format) to the panorma
@@ -11,13 +11,13 @@ function [img1_rot, rot, err] = AlignLLPanoramas(img1, img2, bVisualization)
 %       -img1: unaligned image
 %       -img2: reference panorama for alignment
 %       -bVisualization: if it set to 1 this will show the result of 
-%       minimization
+%                        minimization
 %
 %     Output:
-%       -rot: rotation in pixel. Img1 needs to be shifted of rot pixels in
-%       order to be aligned to img2. For the rotation use imShiftWrap.m
-%       -err: matching error
 %       -img1_rot: img1 rotated to be aligned to img2
+%       -rot: rotation in pixel. Img1 needs to be shifted of rot pixels in
+%             order to be aligned to img2. For the rotation use imShiftWrap.m
+%       -err: matching error
 %
 %     Copyright (C) 2012-16  Francesco Banterle
 % 
