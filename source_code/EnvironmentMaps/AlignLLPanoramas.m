@@ -6,6 +6,10 @@ function [img1_rot, rot, err] = AlignLLPanoramas(img1, img2, bVisualization)
 %     This function finds the rotation around Y-axis in pixel for aligning
 %     the panorma img1 (in longitude-latitude format) to the panorma
 %     img2 (in longitude-latitude format).
+%       
+%     Note that img1 and img2 have to share the same Y-axis in order to
+%     produce a meaningful result!
+%
 %
 %     Input:
 %       -img1: unaligned image

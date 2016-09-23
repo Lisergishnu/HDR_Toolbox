@@ -3,13 +3,13 @@ function imgOut = RotateYLL(img, angle)
 %        imgOut = RotateYLL(img, angle)
 %
 %        This function rotates an environment map encoded with LL encoding
-%        by an angle (degrees) around Y axis.
+%        by an angle (degrees) around the Y-axis.
 %
 %        Input:
 %           -img: an environment map encoded with LL encoding
-%           -angle: rotation angle (degrees) around Y axis
+%           -angle: rotation angle (degrees) around the Y-axis
 %        Output:
-%           -imgOut: img rotated by angle around Y axis
+%           -imgOut: img rotated by angle around the Y-axis
 %
 %     Copyright (C) 2016 Francesco Banterle
 % 
