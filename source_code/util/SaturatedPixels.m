@@ -1,13 +1,13 @@
-function imgOut = SaturatedPixels(img, min, max)
+function imgOut = SaturatedPixels(img, t_min, t_max)
 %
 %
-%        imgOut = SaturatedPixels(img, min, max)
+%        imgOut = SaturatedPixels(img, t_min, t_max)
 %
 %
 %        Input:
 %           -img: input image with saturated pixels
-%           -min: low level for under-exposed values
-%           -max: high level for over-exposed values
+%           -t_min: low level for under-exposed values
+%           -t_max: high level for over-exposed values
 %
 %        Output:
 %           -imgOut: a mask with1 over-exposed and under-exposed pixels
@@ -29,7 +29,7 @@ function imgOut = SaturatedPixels(img, min, max)
 %
 
 imgOut = ones(size(img));
-imgOut(img < min) = 0;
-imgOut(img > max) = 0;
+imgOut(img < t_min) = 0;
+imgOut(img > t_max) = 0;
 
 end

@@ -4,16 +4,17 @@ function stack = ReadRAWStack(dir_name, format, saturation_level)
 %
 %
 %        Input:
-%           -dir_name: the folder name where the stack is stored.
-%           -format: an LDR format for reading LDR images.
-%           -saturation_level: when the camera satures for RAW files.
-%           -bNormalization: is a flag for normalizing or not the stack in
-%           [0, 1].
+%           -dir_name: the folder name where the stack is stored
+%           -format: an LDR format for reading LDR images
+%           -saturation_level: when the camera satures for RAW files. Note
+%           that if saturation_level is a negative value, it will be
+%           computed from the stack (this process may be slow).
 %
 %        Output:
-%           -stack: a stack of exposure values from images in dir_name
+%           -stack: a stack of exposure values from images in dir_name with
+%           format
 %
-%     Copyright (C) 2015  Francesco Banterle
+%     Copyright (C) 2015-16  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -35,6 +36,15 @@ end
 
 list = dir([dir_name, '/*.', format]);
 n = length(list);
+
+if(saturation_level < 0)
+    saturation_level = 2^16 - 1;
+    for i=1:n
+        name = [dir_name, '/', list(i).name];
+        saturation_level_i = getRAWSaturationLevel(name);
+        saturation_level = min([saturation_level, saturation_level_i]);
+    end
+end
 
 if(n > 0)
     info = read_raw_info([dir_name, '/', list(1).name]);

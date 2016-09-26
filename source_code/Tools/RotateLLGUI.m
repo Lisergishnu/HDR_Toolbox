@@ -36,9 +36,6 @@ hold on;
 r_h = round(r / 2);
 line([1, c], [r_h, r_h], 'Color', 'r', 'LineWidth', 4);
 
-
-
-
 [x0, y0] = ginput(1);
 
 plot(x0, y0, 'r+');
