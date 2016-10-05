@@ -67,7 +67,7 @@ h_HDR = atan2(imgHDR_IPT(:,:,2), imgHDR_IPT(:,:,3));
 %Algorithm
 C_TMO_prime = C_TMO .* imgHDR_IPT(:,:,1) ./ imgTMO_IPT(:,:,1);
 r = SaturationPouli(C_HDR, imgHDR_IPT(:,:,1))./SaturationPouli(C_TMO_prime, imgTMO_IPT(:,:,1));
-C_c = r.*C_TMO_prime;%Final scale
+C_c = r .* C_TMO_prime;%Final scale
 
 imgTMO_c_IPT = zeros(size(imgTMO));
 imgTMO_c_IPT(:,:,1) = imgTMO_IPT(:,:,1);

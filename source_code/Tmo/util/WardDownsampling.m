@@ -25,7 +25,7 @@ function imgOut = WardDownsampling(img)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-[n, m, col] = size(img);
+[n, m, ~] = size(img);
 maxCoord = max([n, m]);
 viewAngleWidth  = 2 * atan(m / (2 * maxCoord * 0.75));
 viewAngleHeight = 2 * atan(n / (2 * maxCoord * 0.75));

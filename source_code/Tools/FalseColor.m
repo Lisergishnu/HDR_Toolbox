@@ -155,7 +155,7 @@ if(FC_Vis)%Visualization
     imshow(imgOut, 'InitialMagnification', 'fit');
     colormap(color_map);
          
-    hcb = colorbar('Ticks', 0:(1/4):1 ,'YtickLabel',{sprintf('%2.2f', yticks(1)), sprintf('%2.2f', yticks(2)), sprintf('%2.2f', yticks(3)), sprintf('%2.2f', yticks(4)), sprintf('%2.2f', yticks(5))});
+    hcb = colorbar('Ticks', 0:(1/4):1 ,'YtickLabel',{sprintf('%2.1e', yticks(1)), sprintf('%2.1e', yticks(2)), sprintf('%2.1e', yticks(3)), sprintf('%2.1e', yticks(4)), sprintf('%2.1e', yticks(5))});
     set(hcb,'FontSize', 16);
     set(hcb,'FontName', 'Times New Roman');
     

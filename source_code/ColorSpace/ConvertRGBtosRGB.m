@@ -2,6 +2,7 @@ function imgOut = ConvertRGBtosRGB(img, inverse)
 %
 %       imgOut = ConvertRGBtosRGB(img, inverse)
 %
+%       This function assumes REC.709 primaries for the RGB color space
 %
 %        Input:
 %           -img: image to convert from linear RGB to sRGB or from sRGB to

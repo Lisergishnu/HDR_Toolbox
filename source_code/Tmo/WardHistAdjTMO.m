@@ -31,9 +31,7 @@ function imgOut = WardHistAdjTMO(img, nBin, bPlotHistogram)
 %     in IEEE Transactions on Visualization and Computer Graphics 1997
 %
 
-%Is it a three color channels image?
 check13Color(img);
-
 checkNegative(img);
 
 if(~exist('nBin', 'var'))
@@ -84,7 +82,7 @@ if(bPlotHistogram)
     bar(p);
 end
 
-%Calculation of P(x) 
+%Compute P(x) 
 Pcum = cumsum(p);
 Pcum = Pcum / max(Pcum);
 

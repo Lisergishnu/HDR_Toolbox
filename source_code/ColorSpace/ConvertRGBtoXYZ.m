@@ -2,6 +2,7 @@ function imgOut = ConvertRGBtoXYZ(img, inverse)
 %
 %       imgOut = ConvertRGBtoXYZ(img, inverse)
 %
+%       This function assumes REC.709 primaries for the RGB color space
 %
 %        Input:
 %           -img: image to convert from RGB to XYZ or from XYZ to RGB.

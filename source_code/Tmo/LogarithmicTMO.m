@@ -27,6 +27,7 @@ function imgOut = LogarithmicTMO(img, q_logarithmic, k_logarithmic)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
+
 check13Color(img);
 
 checkNegative(img);

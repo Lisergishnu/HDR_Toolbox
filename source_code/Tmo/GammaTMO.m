@@ -53,7 +53,7 @@ invGamma = 1.0 / TMO_gamma;
 exposure = 2^TMO_fstop;
 
 %clamping values out of the range [0.0,1.0]
-imgOut = ClampImg((exposure*img).^invGamma,0,1);
+imgOut = ClampImg((exposure * img).^invGamma, 0, 1);
 
 if(TMO_view)
     imshow(imgOut);
