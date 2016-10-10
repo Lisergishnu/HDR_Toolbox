@@ -55,7 +55,7 @@ if(isa(imgDistorted, 'uint16'))
     imgDistorted = double(imgDistorted) / 65535.0;
 end
 
-if(~(b1 && b2))
+if(xor(b1, b2))
     disp('PSNR is not very meaningful for HDR images/videos, please consider mPSNR instead!');
 end
 

@@ -44,8 +44,10 @@ function [imgOut, lin_fun] = BuildHDR(stack, stack_exposure, lin_type, lin_fun, 
 %               domain.
 %               - 'log': it merges different LDR images in the natural
 %               logarithmic domain.
-%               - 'robertson': it merges different LDR images in the linear
-%               domain using Robertson et al.'s weighting.
+%               - 'w_time_sq': it merges different LDR images in the
+%               linear; the weight is scaled by the square of the exposure
+%               time.
+%               
 %
 %           -bMeanWeight: if it is set to 1, it will compute a single
 %           weight for each exposure (not a weight for each color channel)
@@ -119,6 +121,10 @@ if(length(stack_exposure) ~= length(stack_exposure_check))
     error('The stack contains images with the same exposure value. Please remove these duplicated images!');
 end
 
+if(min(stack_exposure(:)) <= 0.0)
+    error('The stack contains images with negative or zero exposure value. Please remove this images!');
+end
+
 %merging
 [r, c, col, n] = size(stack);
 
@@ -155,9 +161,6 @@ end
 %this value is added for numerical stability
 delta_value = 1.0 / 65536.0;
 
-[~, index_sat] = min(stack_exposure);
-slice_sat = [];
-
 %for each LDR image...
 for i=1:n
     tmpStack = ClampImg(single(stack(:,:,:,i)) / scale, 0.0, 1.0);
@@ -167,30 +170,22 @@ for i=1:n
 
     %linearization of the image
     tmpStack = RemoveCRF(tmpStack, lin_type, lin_fun);
-    
-    %fetch exposure time
-    t = stack_exposure(i);     
-    
-    if(i == index_sat)
-        slice_sat = tmpStack / t;
-    end
-   
+      
     %sum things up...
-    t = stack_exposure(i);    
-    if(t > 0.0)                
-        switch merge_type
-            case 'linear'
-                imgOut = imgOut + (weight .* tmpStack) / t;
-                totWeight = totWeight + weight;
-            
-            case 'log'
-                imgOut = imgOut + weight .* (log(tmpStack + delta_value) - log(t));
-                totWeight = totWeight + weight;                
-            
-            case 'robertson'
-                imgOut = imgOut + (weight .* tmpStack) * t;
-                totWeight = totWeight + weight * t * t;
-        end
+    dt_i = stack_exposure(i);    
+              
+    switch merge_type
+        case 'linear'
+            imgOut = imgOut + (weight .* tmpStack) / dt_i;
+            totWeight = totWeight + weight;
+
+        case 'log'
+            imgOut = imgOut + weight .* (log(tmpStack + delta_value) - log(dt_i));
+            totWeight = totWeight + weight;                
+
+        case 'w_time_sq'
+            imgOut = imgOut + (weight .* tmpStack) * dt_i;
+            totWeight = totWeight + weight * dt_i * dt_i;
     end
 end
 
@@ -204,21 +199,54 @@ end
 saturation = 1e-4;
 
 if(~isempty(totWeight <= saturation))
-    disp('WARNING: the stack has saturated pixels!');
+    [~, i_sat] = min(stack_exposure);
+    [~, i_noisy] = max(stack_exposure);
 
+    i_med = round(length(stack_exposure) / 2);
+    med = ClampImg(single(stack(:,:,:,i_med)) / scale, 0.0, 1.0);
+    
+    tmpStack = ClampImg(single(stack(:,:,:,i_sat)) / scale, 0.0, 1.0);
+    img_sat = RemoveCRF(tmpStack, lin_type, lin_fun);
+    img_sat = img_sat / stack_exposure(i_sat);
+       
     mask = zeros(size(totWeight));
-    mask(totWeight <= saturation) = 1;
+    mask(totWeight <= saturation & med > 0.5) = 1;
     mask = max(mask, [], 3);
     
-    if(exist('debug_mode', 'var'))
-        imwrite(mask, 'saturation_mask.bmp');
-    end
+    if(max(mask(:)) > 0.5)
+        disp('WARNING: the stack has saturated pixels!');
+        if(exist('debug_mode', 'var'))
+            imwrite(mask, 'mask_sat.bmp');
+        end
 
-    for i=1:col
-        tmp = imgOut(:,:,i);
-        slice_i = slice_sat(:,:,i);
-        tmp(mask == 1) = slice_i(mask == 1);
-        imgOut(:,:,i) = tmp;
+        for i=1:col
+            io_i = imgOut(:,:,i);
+            is_i = img_sat(:,:,i);
+            io_i(mask == 1) = is_i(mask == 1);
+            imgOut(:,:,i) = io_i;
+        end
+    end
+    
+    tmpStack = ClampImg(single(stack(:,:,:,i_noisy)) / scale, 0.0, 1.0);
+    img_noisy = RemoveCRF(tmpStack, lin_type, lin_fun);
+    img_noisy = img_noisy / stack_exposure(i_noisy); 
+    
+    mask = zeros(size(totWeight));
+    mask(totWeight <= saturation & med < 0.5) = 1;
+    mask = max(mask, [], 3);
+    
+    if(max(mask(:)) > 0.5)
+        disp('WARNING: the stack has noisy dark pixels!');        
+        if(exist('debug_mode', 'var'))
+            imwrite(mask, 'mask_noisy.bmp');
+        end
+
+        for i=1:col
+            io_i = imgOut(:,:,i);
+            in_i = img_noisy(:,:,i);
+            io_i(mask == 1) = in_i(mask == 1);
+            imgOut(:,:,i) = io_i;
+        end
     end
 end
 

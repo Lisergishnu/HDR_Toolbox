@@ -1,6 +1,6 @@
-function [lin_fun, max_lin_fun] = DebevecCRF(stack, stack_exposure, nSamples, sampling_strategy, smoothing_term)
+function [lin_fun, max_lin_fun] = DebevecCRF(stack, stack_exposure, nSamples, sampling_strategy, smoothing_term, bNormalize)
 %
-%       [lin_fun, max_lin_fun] = DebevecCRF(stack, stack_exposure, nSamples, sampling_strategy, smoothing_term)
+%       [lin_fun, max_lin_fun] = DebevecCRF(stack, stack_exposure, nSamples, sampling_strategy, smoothing_term, bNormalize)
 %
 %       This function computes camera response function using Debevec and
 %       Malik method.
@@ -18,6 +18,7 @@ function [lin_fun, max_lin_fun] = DebevecCRF(stack, stack_exposure, nSamples, sa
 %               -'RegularSpatial': picking regular samples in the image
 %           -smoothing_term: a smoothing term for solving the linear
 %           system
+%           -bNormalize: a boolean value for normalizing the inverse CRF
 %
 %        Output:
 %           -lin_fun: the inverse CRF
@@ -64,6 +65,10 @@ if(~exist('smoothing_term', 'var'))
     smoothing_term = 20;
 end
 
+if(~exist('bNormalize', 'var'))
+    bNormalize = 1;
+end
+
 if(size(stack, 4) ~= length(stack_exposure))
     error('stack and stack_exposure have different number of exposures');
 end
@@ -95,7 +100,6 @@ for i=1:col
     g = exp(g);
     
     lin_fun(:,i) = g;
-    max_lin_fun(i) = max(g);
 end
 
 %color correction
@@ -108,6 +112,15 @@ scale = FindChromaticyScale([0.5, 0.5, 0.5], gray);
 
 for i=1:col
     lin_fun(:,i) = scale(i) * lin_fun(:,i);
+    max_lin_fun(i) = max(g);
+end
+
+if(bNormalize)
+    max_val = max(max_lin_fun(:))
+    
+    for i=1:col
+        lin_fun(:,i) = lin_fun(:,i) / max_val;
+    end        
 end
 
 end
