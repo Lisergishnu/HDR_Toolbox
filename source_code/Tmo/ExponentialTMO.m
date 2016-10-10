@@ -1,4 +1,4 @@
-function imgOut = ExponentialTMO(img, q_exponential, k_exponential)
+function imgOut = ExponentialTMO(img, q_exponential)
 %
 %       imgOut = ExponentialTMO(img,Exp_scale)   
 %
@@ -6,7 +6,6 @@ function imgOut = ExponentialTMO(img, q_exponential, k_exponential)
 %       Input:
 %           -img: input HDR image
 %           -q_exponential: appearance value [1, +inf)
-%           -k_exponential: appearance value [1, +inf)
 %
 %       Output
 %           -imgOut: tone mapped image
@@ -36,16 +35,8 @@ if(~exist('q_exponential', 'var'))
     q_exponential = 1;
 end
 
-if(~exist('k_exponential', 'var'))
-    k_exponential = 1;
-end
-
 if(q_exponential < 1)
     q_exponential = 1;
-end
-
-if(k_exponential < 1)
-    k_exponential = 1;
 end
 
 %Luminance channel
@@ -55,7 +46,7 @@ L = lum(img);
 Lwa = logMean(L);
 
 %Dynamic Range Reduction
-Ld = 1 - exp(-(L * q_exponential) / (Lwa * k_exponential));
+Ld = 1 - exp(-q_exponential * ( L / Lwa));
 
 %Changing luminance
 imgOut = ChangeLuminance(img, L, Ld);
