@@ -156,12 +156,12 @@ if(FC_Vis)%Visualization
     colormap(color_map);
          
     hcb = colorbar('Ticks', 0:(1/4):1 ,'YtickLabel',{sprintf('%2.1e', yticks(1)), sprintf('%2.1e', yticks(2)), sprintf('%2.1e', yticks(3)), sprintf('%2.1e', yticks(4)), sprintf('%2.1e', yticks(5))});
-    set(hcb,'FontSize', 16);
+    set(hcb,'FontSize', 24);
     set(hcb,'FontName', 'Times New Roman');
     
     pos = hcb.Position;
     
-    set(get(hcb,'XLabel'), 'Rotation', 0, 'String', 'Lux', 'FontSize', 18, 'FontName', 'Times New Roman', 'Position', [pos(1), 0.0 , 0.0]);
+    set(get(hcb,'XLabel'), 'Rotation', 0, 'String', 'Lux', 'FontSize', 24, 'FontName', 'Times New Roman', 'Position', [pos(1), 0.0 , 0.0]);
 end
 
 end

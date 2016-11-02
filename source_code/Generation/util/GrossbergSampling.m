@@ -4,7 +4,7 @@ function stackOut = GrossbergSampling(stack, nSamples)
 %
 %
 %        Input:
-%           -stack: a stack of LDR images; 4-D array where values are
+%           -stack: a stack of LDR histograms; 
 %           -nSamples: the number of samples for sampling the stack
 %
 %        Output:
@@ -52,7 +52,7 @@ for i=1:stackSize
     end
     
     if(debug)
-        plot(stack(:,1,i));
+        plot((0:255)/255,stack(:,1,i));
     end
 end
 

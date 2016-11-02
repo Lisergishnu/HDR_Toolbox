@@ -22,7 +22,7 @@ function imgOut = MertensTMO(img, folder_name, format, imageStack, wE, wS, wC, b
 %           -wC: the weight for the contrast in [0,1]. Strong edgese are 
 %                taken more into account if the wE is near 1
 %                otherwise they are not taken into account.
-%           -bMertensDebug: a debugging flag to turn on/off the gamma
+%           -bWarning: a debugging flag to turn on/off the gamma
 %           encoding notice.
 %
 %        Output:

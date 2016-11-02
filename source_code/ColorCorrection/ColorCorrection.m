@@ -6,7 +6,7 @@ function imgOut = ColorCorrection(img, schlick_correction)
 %
 %       input:
 %         - img: an image
-%	      - schlick_correction: the saturation correction's factor.
+%	      - schlick_correction: the saturation correction's factor in (0,1].
 %                       If correction>1 saturation is increased,
 %                       otherwise the image is desaturated. This parameter
 %                       can be a gray scale image.
@@ -14,7 +14,7 @@ function imgOut = ColorCorrection(img, schlick_correction)
 %       output:
 %         - imgOut: corrected values
 %
-%     Copyright (C) 2011  Francesco Banterle
+%     Copyright (C) 2011-16  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
