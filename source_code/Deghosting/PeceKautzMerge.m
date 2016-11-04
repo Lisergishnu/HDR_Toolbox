@@ -1,7 +1,7 @@
-function imgOut = PeceKautzMerge(imageStack, folder_name, format, wE, wS, wC, iterations, ke_size, kd_size, ward_percentile)
+function imgOut = PeceKautzMerge(imageStack, folder_name, format, weights, iterations, ke_size, kd_size, ward_percentile)
 %
 %
-%        imgOut = PeceKautzMerge(imageStack, folder_name, format, wE, wS, wC, iterations, kernelSize, ward_percentile)
+%        imgOut = PeceKautzMerge(imageStack, folder_name, format, weights, iterations, kernelSize, ward_percentile)
 %
 %
 %        Input:
@@ -11,15 +11,16 @@ function imgOut = PeceKautzMerge(imageStack, folder_name, format, wE, wS, wC, it
 %           -format: the format of LDR images ('bmp', 'jpg', etc) in case
 %                    imageStack=[] and the tone mapped images is built from a sequence of
 %                    images in the current folder_name
-%           -wE: the weight for the well exposedness in [0,1]. Well exposed
-%                pixels are taken more into account if the wE is near 1
-%                otherwise they are not taken into account.
-%           -wS: the weight for the saturation in [0,1]. Saturated
-%                pixels are taken more into account if the wS is near 1
-%                otherwise they are not taken into account.
-%           -wC: the weight for the contrast in [0,1]. Strong edgese are 
-%                taken more into account if the wE is near 1
-%                otherwise they are not taken into account.
+%           -weights: a three value vector:
+%               -weights(1): the weight for the well exposedness in [0,1]. Well exposed
+%                   pixels are taken more into account if the wE is near 1
+%                   otherwise they are not taken into account.
+%               -weights(2): the weight for the saturation in [0,1]. Saturated
+%                   pixels are taken more into account if the wS is near 1
+%                   otherwise they are not taken into account.
+%               -weights(3): the weight for the contrast in [0,1]. Strong edgese are 
+%                    taken more into account if the wE is near 1
+%                    otherwise they are not taken into account.
 %           -iterations: number of iterations for improving the movements'
 %           mask
 %           -ke_size: size of the erosion kernel
@@ -55,17 +56,17 @@ function imgOut = PeceKautzMerge(imageStack, folder_name, format, wE, wS, wC, it
 %
 
 %default parameters if they are missing
-if(~exist('wE', 'var'))
-    wE = 1.0;
+if(~exist('weights', 'var'))
+    weights = ones(1, 3);
 end
 
-if(~exist('wS', 'var'))
-    wS = 1.0;
+if(isempty(weights))
+    weights = ones(1, 3);
 end
 
-if(~exist('wC', 'var'))
-    wC = 1.0;
-end
+wE = weights(1);
+wS = weights(2);
+wC = weights(3);
 
 %imageStack generation
 if(~exist('imageStack', 'var'))
