@@ -28,6 +28,8 @@
 #include <random>
 #include <chrono>
 
+const float C_PI = 3.141592653589793f;
+
 #define MAX(a,b) a > b ? a : b
 
 /**
@@ -111,13 +113,19 @@ void bilateralFilterS(double *img_in, double *img_edge, double *out, int width, 
         for(int j=0; j<tile; j++) {
             int index = tmp + j;
             for(int k=0; k<nSamples; k++) {
-                float u = Random(m());
-                float r = sqrtf(MAX(-logf(u) * sigma_s_sq_2, 0.0f));
 
-                float v = Random(m());
+                float u;
+                do {
+                    u = Random(m());
+                } while(u < 0.0f);
 
-                x[index + k] = int(cosf(v) * r);
-                y[index + k] = int(sinf(v) * r);
+                float r_sq = -logf(u) * sigma_s_sq_2;
+                float r = sqrtf(MAX(r_sq, 0.0f));
+
+                float phi = Random(m()) * C_PI * 2.0f;
+
+                x[index + k] = int(cosf(phi) * r);
+                y[index + k] = int(sinf(phi) * r);
             }
         }
     }
@@ -162,7 +170,7 @@ void bilateralFilterS(double *img_in, double *img_edge, double *out, int width, 
                 }
             }
 
-            bool sum_weight_b = sum_weight > 0.0;
+            bool sum_weight_b = sum_weight > 0.0f;
             for(int c = 0; c < channels; c++) {
                 out[address + c * stride] = sum_weight_b ? tmp_out[c] / sum_weight : tmp_cur[c];
             }
