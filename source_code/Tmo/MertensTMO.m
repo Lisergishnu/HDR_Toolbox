@@ -1,4 +1,4 @@
-function imgOut = MertensTMO(img, imageStack, folder_name, format, weights, bWarning)
+function imgOut = MertensTMO(img, folder_name, format, imageStack, weights, bWarning)
 %
 %
 %        imgOut = MertensTMO(img, folder_name, format, imageStack, weights, bWarning )
