@@ -61,23 +61,24 @@ if(~exist('hou_n', 'var'))
     hou_n = 0.86;%as in the original paper
 end
 
-%Computing luminance
-L_l = lum(img);
-max_L_l = max(L_l(:));
-sigma_l = logMean(L_l);
+L = lum(img);
+
+%compute image statistics
+max_L = max(L(:));
+sigma_l = logMean(L);
 
 %iterative bilateral filter: 2 passes as in the original paper
-L_s_l_1 = bilateralFilter(L_l  ,   [], 0.0, 1.0, 16.0, 0.3);
+L_s_l_1 = bilateralFilter(L  ,   [], 0.0, 1.0, 16.0, 0.3);
 L_s_l   = bilateralFilter(L_s_l_1, [], 0.0, 1.0, 10.0, 0.1);
 
-%Computing parameters
+%compute parameters
 sigma = maxOutLuminance * sigma_l;
 L_s_h = maxOutLuminance * L_s_l;
 
-%Expanding luminance
-L_h = ((L_l / max_L_l) .* ((L_s_h.^hou_n + sigma^hou_n)).^(1.0 / hou_n));
+%expand luminance
+Lexp = ((L / max_L) .* ((L_s_h.^hou_n + sigma^hou_n)).^(1.0 / hou_n));
 
-%Generate the final image with the new luminance
-imgOut = ChangeLuminance(img, L_l, L_h);
+%change luminance
+imgOut = ChangeLuminance(img, L, Lexp);
 
 end

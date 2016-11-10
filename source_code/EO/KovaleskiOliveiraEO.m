@@ -1,18 +1,18 @@
-function [imgOut, bef_map] = KovaleskiOliveiraEO(img, type_content, KO_sigma_s, KO_sigma_r, KO_display_min, KO_display_max, gammaRemoval)
+function [imgOut, bef_map] = KovaleskiOliveiraEO(img, type_content, ko_sigma_s, ko_sigma_r, ko_display_min, ko_display_max, gammaRemoval)
 %
-%       [imgOut, bef_map] = KovaleskiOliveiraEO(img, KO_sigma_s, KO_sigma_r, KO_display_min, KO_display_max, gammaRemoval)
+%       [imgOut, bef_map] = KovaleskiOliveiraEO(img, ko_sigma_s, ko_sigma_r, ko_display_min, ko_display_max, gammaRemoval)
 %
 %
 %        Input:
 %           -img: input LDR image with values in [0,1]
 %           -type_content: -'image' if img is a still image
 %                          -'video' if img is a frame of a video 
-%           -KO_sigma_s: spatial sigma of the bilateral filter. Default for
+%           -ko_sigma_s: spatial sigma of the bilateral filter. Default for
 %           HD content is 150.
-%           -KO_sigma_r: range sigma of the bilateral filter. Default is
+%           -ko_sigma_r: range sigma of the bilateral filter. Default is
 %           25/255.
-%           -KO_display_min: black level of the display. Default is 0.3nit
-%           -KO_display_max: white level of the display. Default is 1200nit
+%           -ko_display_min: black level of the display. Default is 0.3nit
+%           -ko_display_max: white level of the display. Default is 1200nit
 %           -gammaRemoval: the gamma value to be removed if known.
 %
 %        Output:
@@ -42,24 +42,24 @@ function [imgOut, bef_map] = KovaleskiOliveiraEO(img, type_content, KO_sigma_s, 
 
 check13Color(img);
 
-if(~exist('KO_sigma_s', 'var'))
-    KO_sigma_s = 150; %as in the original paper
+if(~exist('ko_sigma_s', 'var'))
+    ko_sigma_s = 150; %as in the original paper
 end
 
-if(~exist('KO_sigma_r', 'var'))
-    KO_sigma_r = 25 / 255; %as in the original paper
+if(~exist('ko_sigma_r', 'var'))
+    ko_sigma_r = 25 / 255; %as in the original paper
 end
 
 if(~exist('type_content', 'var'))
     type_content = 'image';
 end
 
-if(~exist('KO_display_min', 'var'))
-    KO_display_min = 0.3; %as in the original paper
+if(~exist('ko_display_min', 'var'))
+    ko_display_min = 0.3; %as in the original paper
 end
 
-if(~exist('KO_display_max', 'var'))
-    KO_display_max = 1200; %as in the original paper
+if(~exist('ko_display_max', 'var'))
+    ko_display_max = 1200; %as in the original paper
 end
 
 if(~exist('gammaRemoval', 'var'))
@@ -78,29 +78,27 @@ end
 if(gammaRemoval > 0.0)
     img = img.^gammaRemoval;
     threshold = threshold^gammaRemoval;
-    KO_sigma_r = KO_sigma_r^gammaRemoval;
+    ko_sigma_r = ko_sigma_r^gammaRemoval;
 end
 
-imgA = max(img, [], size(img,3));
+L = lum(img);
 
-imgB = lum(img);
+imgA = max(img, [], size(img,3));
 
 imgC = zeros(size(imgA));
 imgC(imgA > threshold) = 1;
 
-bef_map = bilateralFilter(imgC, imgB, 0, 1, KO_sigma_s, KO_sigma_r);
+bef_map = bilateralFilter(imgC, L, 0, 1, ko_sigma_s, ko_sigma_r);
 
 %remapping bef_map [1, ..., alpha]
 alpha = 4.0;
 bef_map = bef_map * (alpha - 1) + 1;
 
 %scaling the final luminance
-img_exp = img * (KO_display_max - KO_display_min) + KO_display_min;
+Lexp = L * (ko_display_max - ko_display_min) + ko_display_min;
+Lexp = Lexp .* bef_map;
 
-%Removing the old luminance
-imgOut = zeros(size(img));
-for i=1:size(img,3)
-    imgOut(:,:,i) = img_exp(:,:,i) .* bef_map;
-end
+%change luminance
+imgOut = ChangeLuminance(img, L, Lexp);
 
 end

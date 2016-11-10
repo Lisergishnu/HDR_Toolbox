@@ -57,7 +57,6 @@ end
 L = lum(img);
 L_max = max(L(:));
 L_min = min(L(:));
-
 Lexp = maxOutLuminance * (((L - L_min) / (L_max - L_min)).^gammaAkyuz);
 
 %Removing the old luminance

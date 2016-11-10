@@ -1,12 +1,12 @@
-function imgOut = LandisEO(img, Landis_alpha, Landis_threshold,  maxOutLuminance, gammaRemoval)
+function imgOut = LandisEO(img, l_alpha, l_threshold,  maxOutLuminance, gammaRemoval)
 %
-%       imgOut = LandisEO(img, Landis_alpha, Landis_threshold, maxOutLuminance, gammaRemoval)
+%       imgOut = LandisEO(img, l_alpha, l_threshold, maxOutLuminance, gammaRemoval)
 %
 %
 %        Input:
 %           -img:  input LDR image with values in [0,1]
-%           -Landis_alpha: this value defines the 
-%           -Landis_threshold: threshold for applying the iTMO
+%           -l_alpha: this value defines the 
+%           -l_threshold: threshold for applying the iTMO
 %           -maxOutLuminance: maximum output luminance
 %           -gammaRemoval: the gamma value to be removed if known
 %
@@ -51,28 +51,27 @@ end
 %
 %
 
-if(~exist('Landis_alpha','var'))
-    Landis_alpha = 2.0;   
+if(~exist('l_alpha','var'))
+    l_alpha = 2.0;   
 end
 
-if(~exist('Landis_threshold','var'))
-    Landis_threshold = 0.5;
+if(~exist('l_threshold','var'))
+    l_threshold = 0.5;
 end
 
 %Luminance channel
 L = lum(img);
 
-%Expanding from the mean value
-if(Landis_threshold <= 0)
-    Landis_threshold = mean(L(:));
+
+if(l_threshold <= 0) %Expanding from the mean value
+    l_threshold = mean(L(:));
 end
 
 %Finding pixels needed to be expanded
-toExpand = find(L >= Landis_threshold);
+toExpand = find(L >= l_threshold);
 
 %Exapnsion using a power function
-maxValL = max(L(:)); %generalization in the case of unnormalized data
-weights = ((L(toExpand) - Landis_threshold) / (maxValL - Landis_threshold)).^Landis_alpha;
+weights = ((L(toExpand) - l_threshold) / (max(L(:)) - l_threshold)).^l_alpha;
 
 Lexp = L;
 Lexp(toExpand) = L(toExpand) .* (1 - weights) + maxOutLuminance * L(toExpand) .* weights;
