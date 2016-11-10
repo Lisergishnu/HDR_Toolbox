@@ -103,7 +103,7 @@ void bilateralFilterS(double *img_in, double *img_edge, double *out, int width, 
 
     int stride = height * width;
 
-    int tile = 32;
+    int tile = 128;
     int tile_sq = tile * tile;
     int *x = new int [nSamples * tile_sq];
     int *y = new int [nSamples * tile_sq];
@@ -119,7 +119,7 @@ void bilateralFilterS(double *img_in, double *img_edge, double *out, int width, 
                     u = Random(m());
                 } while(u < 0.0f);
 
-                float r_sq = -logf(u) * sigma_s_sq_2;
+                float r_sq = -logf(u) * sigma_s_sq_2;                
                 float r = sqrtf(MAX(r_sq, 0.0f));
 
                 float phi = Random(m()) * C_PI * 2.0f;
@@ -130,6 +130,9 @@ void bilateralFilterS(double *img_in, double *img_edge, double *out, int width, 
         }
     }
 
+    int width1 = width - 1;
+    int height1 = height - 1;
+    
     for(int j = 0; j < width; j++) {
         int j_tmp = j * height;
         
@@ -143,14 +146,14 @@ void bilateralFilterS(double *img_in, double *img_edge, double *out, int width, 
             int index_tile = tx * tile + ty;
 
             for(int c = 0; c < channels; c++) {
-                tmp_cur[c] = img_in[address + c * stride];
+                tmp_cur[c]      = img_in  [address + c * stride];
                 tmp_cur_edge[c] = img_edge[address + c * stride];
                 tmp_out[c] = 0.0;
             }
 
             for(int k=0; k<nSamples; k++) {
-                int x_t = Clamp(j + x[index_tile + k], 0, width  - 1);
-                int y_t = Clamp(i + y[index_tile + k], 0, height - 1);
+                int x_t = Clamp(j + x[index_tile + k], 0, width1);
+                int y_t = Clamp(i + y[index_tile + k], 0, height1);
 
                 int address_samples = x_t * height + y_t;
 
