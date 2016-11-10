@@ -40,8 +40,6 @@ function [imgOut, bef_map] = KovaleskiOliveiraEO(img, type_content, KO_sigma_s, 
 %     in 2014 27th SIBGRAPI Conference on Graphics, Patterns and Images
 %
 
-
-%is it a three color channels image?
 check13Color(img);
 
 if(~exist('KO_sigma_s', 'var'))

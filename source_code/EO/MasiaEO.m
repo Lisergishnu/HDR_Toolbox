@@ -1,12 +1,12 @@
 
-function [imgOut, bWarning] = MasiaEO(img, Masia_Max, Masia_noise_removal, Masia_multi_reg, gammaRemoval)
+function [imgOut, bWarning] = MasiaEO(img, maxOutLuminance, Masia_noise_removal, Masia_multi_reg, gammaRemoval)
 %
-%       [imgOut, bWarning] = MasiaEO(img, Mesia_Max, Masia_noise_removal, Masia_multi_reg, gammaRemoval)
+%       [imgOut, bWarning] = MasiaEO(img, maxOutLuminance, Masia_noise_removal, Masia_multi_reg, gammaRemoval)
 %
 %
 %        Input:
 %           -img: input LDR image with values in [0,1]
-%           -Masia_Max: maximum luminance output in cd/m^2
+%           -maxOutLuminance: maximum luminance output in cd/m^2
 %           -Masia_noise_removal: if set to 1 it removes noise or artifacts
 %           using the bilateral filter
 %           -Masia_multi_reg: if set to 1 it applies multi regression (2),
@@ -17,7 +17,7 @@ function [imgOut, bWarning] = MasiaEO(img, Masia_Max, Masia_noise_removal, Masia
 %           -imgOut: an expanded image
 %           -bWarning: a flag if there was gamma inversion
 %
-%     Copyright (C) 2011-15  Francesco Banterle
+%     Copyright (C) 2011-16  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -42,16 +42,27 @@ function [imgOut, bWarning] = MasiaEO(img, Masia_Max, Masia_noise_removal, Masia
 %     in Multimedia Tools and Applications 2015     
 %
 
-%is it a three color channels image?
-check3Color(img);
+check13Color(img);
 
-if(~exist('Masia_Max', 'var'))
-    Masia_Max = 3000.0;%The maximum output of a Brightside DR37p
+if(~exist('maxOutLuminance', 'var'))
+    maxOutLuminance = 3000.0;
+end
+
+if(maxOutLuminance < 0.0)
+    maxOutLuminance = 3000.0;
 end
 
 if(~exist('gammaRemoval', 'var'))
-    gammaRemoval = -1.0;
+    gammaRemoval = -1;
 end
+
+if(gammaRemoval > 0.0)
+    img=img.^gammaRemoval;
+end
+
+%
+%
+%
 
 if(~exist('Masia_noise_removal', 'var'))
     Masia_noise_removal = 1;
@@ -59,10 +70,6 @@ end
 
 if(~exist('Masia_multi_reg', 'var'))
     Masia_multi_reg = 0;
-end
-
-if(gammaRemoval > 0.0)
-    img = img.^gammaRemoval;
 end
 
 bWarning = 0;
@@ -105,6 +112,6 @@ else
 end
 
 %Changing luminance
-imgOut = ChangeLuminance(img, L, Lexp * Masia_Max);
+imgOut = ChangeLuminance(img, L, Lexp * maxOutLuminance);
 
 end
