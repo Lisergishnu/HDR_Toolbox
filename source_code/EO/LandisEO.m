@@ -55,7 +55,15 @@ if(~exist('l_alpha','var'))
     l_alpha = 2.0;   
 end
 
+if(l_alpha <= 0.0)
+    l_alpha = 2.0;
+end
+
 if(~exist('l_threshold','var'))
+    l_threshold = 0.5;
+end
+
+if(l_threshold <= 0.0)
     l_threshold = 0.5;
 end
 
