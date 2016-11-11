@@ -1,13 +1,13 @@
-function imgOut = LandisEO(img, l_alpha, l_threshold,  maxOutLuminance, gammaRemoval)
+function imgOut = LandisEO(img, l_alpha, l_threshold,  maxOutput, gammaRemoval)
 %
-%       imgOut = LandisEO(img, l_alpha, l_threshold, maxOutLuminance, gammaRemoval)
+%       imgOut = LandisEO(img, l_alpha, l_threshold, maxOutput, gammaRemoval)
 %
 %
 %        Input:
 %           -img:  input LDR image with values in [0,1]
 %           -l_alpha: this value defines the 
 %           -l_threshold: threshold for applying the iTMO
-%           -maxOutLuminance: maximum output luminance
+%           -maxOutput: maximum output luminance
 %           -gammaRemoval: the gamma value to be removed if known
 %
 %        Output:
@@ -31,12 +31,12 @@ function imgOut = LandisEO(img, l_alpha, l_threshold,  maxOutLuminance, gammaRem
 
 check13Color(img);
 
-if(~exist('maxOutLuminance', 'var'))
-    maxOutLuminance = 3000.0;
+if(~exist('maxOutput', 'var'))
+    maxOutput = 3000.0;
 end
 
-if(maxOutLuminance < 0.0)
-    maxOutLuminance = 3000.0;
+if(maxOutput < 0.0)
+    maxOutput = 3000.0;
 end
 
 if(~exist('gammaRemoval', 'var'))
@@ -74,7 +74,7 @@ toExpand = find(L >= l_threshold);
 weights = ((L(toExpand) - l_threshold) / (max(L(:)) - l_threshold)).^l_alpha;
 
 Lexp = L;
-Lexp(toExpand) = L(toExpand) .* (1 - weights) + maxOutLuminance * L(toExpand) .* weights;
+Lexp(toExpand) = L(toExpand) .* (1 - weights) + maxOutput * L(toExpand) .* weights;
 
 %Removing the old luminance
 imgOut = ChangeLuminance(img, L, Lexp);

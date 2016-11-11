@@ -1,12 +1,12 @@
-function imgOut = AkyuzEO(img, maxOutLuminance, gammaAkyuz, gammaRemoval)
+function imgOut = AkyuzEO(img, maxOutput, a_gamma, gammaRemoval)
 %
-%       imgOut = AkyuzEO(img, maxOutLuminance, gammaAkyuz, gammaRemoval)
+%       imgOut = AkyuzEO(img, maxOutput, a_gamma, gammaRemoval)
 %
 %
 %        Input:
 %           -img: input LDR image with values in [0,1]
-%           -maxOutLuminance: the maximum output luminance value defines the 
-%           -gammaAkyuz: this value defines the appearance
+%           -maxOutput: the maximum output luminance value defines the 
+%           -a_gamma: this value defines the appearance
 %           -gammaRemoval: the gamma value to be removed if known
 %
 %        Output:
@@ -30,12 +30,12 @@ function imgOut = AkyuzEO(img, maxOutLuminance, gammaAkyuz, gammaRemoval)
 
 check13Color(img);
 
-if(~exist('maxOutLuminance', 'var'))
-    maxOutLuminance = 3000.0;
+if(~exist('maxOutput', 'var'))
+    maxOutput = 3000.0;
 end
 
-if(maxOutLuminance < 0.0)
-    maxOutLuminance = 3000.0;
+if(maxOutput < 0.0)
+    maxOutput = 3000.0;
 end
 
 if(~exist('gammaRemoval', 'var'))
@@ -50,14 +50,14 @@ end
 %
 %
 
-if(~exist('gammaAkyuz', 'var'))
-    gammaAkyuz = 1.0;
+if(~exist('a_gamma', 'var'))
+    a_gamma = 1.0;
 end
 
 L = lum(img);
 L_max = max(L(:));
 L_min = min(L(:));
-Lexp = maxOutLuminance * (((L - L_min) / (L_max - L_min)).^gammaAkyuz);
+Lexp = maxOutput * (((L - L_min) / (L_max - L_min)).^a_gamma);
 
 %Removing the old luminance
 imgOut = ChangeLuminance(img, L, Lexp);

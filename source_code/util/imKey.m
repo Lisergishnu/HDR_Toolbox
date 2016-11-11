@@ -1,4 +1,4 @@
-function key = imKey(img)
+function [key, Lav] = imKey(img)
 %
 %
 %       key = imKey(img)
@@ -10,6 +10,7 @@ function key = imKey(img)
 %
 %       Output:
 %           -key: the image's key
+%           -Lav: 
 % 
 %       This function segments an image into different dynamic range zones
 %       based on their order of magnitude.

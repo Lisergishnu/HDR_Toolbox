@@ -8,6 +8,7 @@ function imgTMO_c = ColorCorrectionPouli(imgHDR, imgTMO)
 %         - imgHDR: a HDR image
 %         - imgTMO: a tone mapped version of imgHDR in linear RGB color
 %         space
+%         -biTMO:
 %
 %       output:
 %         - imgTMO_c: imgTMO with color correction
@@ -34,7 +35,6 @@ function imgTMO_c = ColorCorrectionPouli(imgHDR, imgTMO)
 %     in the Twenty-first Color and Imaging Conference (CIC21), Albuquerque, Nov. 2013 
 %
 
-%is it a three color channels image?
 check3Color(imgHDR);
 check3Color(imgTMO);
 
@@ -45,15 +45,15 @@ if((r1 ~= r2) || (c1 ~= c2))
     error('ERROR: imgHDR and imgTMO have different spatial resolutions.');
 end
 
-%Normalization step
+%normalization step
 imgHDR = imgHDR / max(imgHDR(:));
 imgTMO = imgTMO / max(imgTMO(:));
 
-%Conversion in the XYZ color space
+%conversion in the XYZ color space
 imgTMO_XYZ = ConvertRGBtoXYZ(imgTMO, 0);
 imgHDR_XYZ = ConvertRGBtoXYZ(imgHDR, 0);
 
-%Conversion in the IPT color space
+%conversion in the IPT color space
 imgTMO_IPT = ConvertXYZtoIPT(imgTMO_XYZ, 0);
 imgHDR_IPT = ConvertXYZtoIPT(imgHDR_XYZ, 0);
 
@@ -64,17 +64,17 @@ C_HDR = sqrt(imgHDR_IPT(:,:,2).^2+imgHDR_IPT(:,:,3).^2);
 %h_TMO = atan2(imgTMO_IPT(:,:,2)./imgTMO_IPT(:,:,3));
 h_HDR = atan2(imgHDR_IPT(:,:,2), imgHDR_IPT(:,:,3));
 
-%Algorithm
+%algorithm
 C_TMO_prime = C_TMO .* imgHDR_IPT(:,:,1) ./ imgTMO_IPT(:,:,1);
 r = SaturationPouli(C_HDR, imgHDR_IPT(:,:,1))./SaturationPouli(C_TMO_prime, imgTMO_IPT(:,:,1));
-C_c = r .* C_TMO_prime;%Final scale
+C_c = r .* C_TMO_prime;%final scale
 
 imgTMO_c_IPT = zeros(size(imgTMO));
 imgTMO_c_IPT(:,:,1) = imgTMO_IPT(:,:,1);
 imgTMO_c_IPT(:,:,2) = sin(h_HDR) .* C_c;%Same Hue of imgHDR
 imgTMO_c_IPT(:,:,3) = cos(h_HDR) .* C_c;%Same Hue of imgHDR
 
-%Conversion back
+%conversion back
 imgTMO_c_XYZ = ConvertXYZtoIPT(imgTMO_c_IPT, 1);
 imgTMO_c = ConvertRGBtoXYZ(imgTMO_c_XYZ, 1);
 

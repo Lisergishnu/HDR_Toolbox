@@ -1,11 +1,11 @@
-function imgOut = HuoPhysEO(img, maxOutLuminance, hou_n, gammaRemoval)
+function imgOut = HuoPhysEO(img, maxOutput, hou_n, gammaRemoval)
 %
-%       imgOut = HuoPhysEO(img, maxOutLuminance, hou_n, gammaRemoval)
+%       imgOut = HuoPhysEO(img, maxOutput, hou_n, gammaRemoval)
 %
 %
 %        Input:
 %           -img: input LDR image normalized in [0,1]
-%           -maxOutLuminance: maximum output luminance in cd/m^2
+%           -maxOutput: maximum output luminance in cd/m^2
 %           -hou_n: a value which determines the dynamic range percentage
 %            of the expanded image allocated to the high luminance level 
 %            and low luminance level of the LDR image.
@@ -37,12 +37,12 @@ function imgOut = HuoPhysEO(img, maxOutLuminance, hou_n, gammaRemoval)
 
 check13Color(img);
 
-if(~exist('maxOutLuminance', 'var'))
-    maxOutLuminance = 3000.0;
+if(~exist('maxOutput', 'var'))
+    maxOutput = 3000.0;
 end
 
-if(maxOutLuminance < 0.0)
-    maxOutLuminance = 3000.0;
+if(maxOutput < 0.0)
+    maxOutput = 3000.0;
 end
 
 if(~exist('gammaRemoval', 'var'))
@@ -72,8 +72,8 @@ L_s_l_1 = bilateralFilter(L  ,   [], 0.0, 1.0, 16.0, 0.3);
 L_s_l   = bilateralFilter(L_s_l_1, [], 0.0, 1.0, 10.0, 0.1);
 
 %compute parameters
-sigma = maxOutLuminance * sigma_l;
-L_s_h = maxOutLuminance * L_s_l;
+sigma = maxOutput * sigma_l;
+L_s_h = maxOutput * L_s_l;
 
 %expand luminance
 Lexp = ((L / max_L) .* ((L_s_h.^hou_n + sigma^hou_n)).^(1.0 / hou_n));

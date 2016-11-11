@@ -1,12 +1,12 @@
 
-function [imgOut, bWarning] = MasiaEO(img, maxOutLuminance, m_noise, m_multi_reg, gammaRemoval)
+function [imgOut, bWarning] = MasiaEO(img, maxOutput, m_noise, m_multi_reg, gammaRemoval)
 %
-%       [imgOut, bWarning] = MasiaEO(img, maxOutLuminance, m_noise, m_multi_reg, gammaRemoval)
+%       [imgOut, bWarning] = MasiaEO(img, maxOutput, m_noise, m_multi_reg, gammaRemoval)
 %
 %
 %        Input:
 %           -img: input LDR image with values in [0,1]
-%           -maxOutLuminance: maximum luminance output in cd/m^2
+%           -maxOutput: maximum output luminance in cd/m^2
 %           -m_noise: if set to 1 it removes noise or artifacts
 %           using the bilateral filter
 %           -m_multi_reg: if set to 1 it applies multi regression (2),
@@ -44,12 +44,12 @@ function [imgOut, bWarning] = MasiaEO(img, maxOutLuminance, m_noise, m_multi_reg
 
 check13Color(img);
 
-if(~exist('maxOutLuminance', 'var'))
-    maxOutLuminance = 3000.0;
+if(~exist('maxOutput', 'var'))
+    maxOutput = 3000.0;
 end
 
-if(maxOutLuminance < 0.0)
-    maxOutLuminance = 3000.0;
+if(maxOutput < 0.0)
+    maxOutput = 3000.0;
 end
 
 if(~exist('gammaRemoval', 'var'))
@@ -77,16 +77,18 @@ bWarning = 0;
 %calculate luminance
 L = lum(img);
 
+[key, Lav] = imKey(img)(L);
+
 %calculate the gamma correction value
 if(m_multi_reg == 0)
     a_var = 10.44;
     b_var = -6.282;
-    m_gamma = imKey(img) * a_var + b_var;
+    m_gamma = key * a_var + b_var;
 else
     %percentage of over-exposed pixels
     p_ov = length(find((L * 255) >= 254 )) / imNumPixels(L) * 100.0;
     %Equation 5 of (2) paper
-    m_gamma = 2.4379 + 0.2319 * log(Lav) - 1.1228 * imKey(img) + 0.0085 * p_ov;
+    m_gamma = 2.4379 + 0.2319 * log(Lav) - 1.1228 * key + 0.0085 * p_ov;
 end
 
 if(m_noise)%noise removal using bilateral filter
@@ -97,7 +99,7 @@ if(m_noise)%noise removal using bilateral filter
 else
     Lexp = L.^m_gamma;
 end
-Lexp = Lexp * maxOutLuminance;
+Lexp = Lexp * maxOutput;
 
 %change luminance
 imgOut = ChangeLuminance(img, L, Lexp);
