@@ -69,11 +69,11 @@ sigma_l = logMean(L);
 
 %iterative bilateral filter: 2 passes as in the original paper
 L_s_l_1 = bilateralFilter(L  ,   [], 0.0, 1.0, 16.0, 0.3);
-L_s_l   = bilateralFilter(L_s_l_1, [], 0.0, 1.0, 10.0, 0.1);
+L_s_l_2 = bilateralFilter(L_s_l_1, [], 0.0, 1.0, 10.0, 0.1);
 
 %compute parameters
 sigma = maxOutput * sigma_l;
-L_s_h = maxOutput * L_s_l;
+L_s_h = maxOutput * L_s_l_2;
 
 %expand luminance
 Lexp = ((L / max_L) .* ((L_s_h.^hou_n + sigma^hou_n)).^(1.0 / hou_n));

@@ -1,6 +1,6 @@
-function [imgOut, bef_map] = KovaleskiOliveiraEO(img, type_content, ko_sigma_s, ko_sigma_r, ko_display_min, ko_display_max, gammaRemoval)
+function [imgOut, e_map] = KovaleskiOliveiraEO(img, type_content, ko_sigma_s, ko_sigma_r, ko_display_min, ko_display_max, gammaRemoval)
 %
-%       [imgOut, bef_map] = KovaleskiOliveiraEO(img, ko_sigma_s, ko_sigma_r, ko_display_min, ko_display_max, gammaRemoval)
+%       [imgOut, e_map] = KovaleskiOliveiraEO(img, type_content, ko_sigma_s, ko_sigma_r, ko_display_min, ko_display_max, gammaRemoval)
 %
 %
 %        Input:
@@ -17,7 +17,7 @@ function [imgOut, bef_map] = KovaleskiOliveiraEO(img, type_content, ko_sigma_s, 
 %
 %        Output:
 %           -imgOut: an expanded image.
-%           -bef_map: the brightness expansion function.
+%           -e_map: the brightness expansion function.
 %
 %     Copyright (C) 2015  Francesco Banterle
 % 
@@ -83,20 +83,15 @@ end
 
 L = lum(img);
 
-imgA = max(img, [], size(img,3));
+imgC = zeros(size(img,1), size(img, 2));
+imgC(max(img, [], size(img,3)) > threshold) = 1;
 
-imgC = zeros(size(imgA));
-imgC(imgA > threshold) = 1;
+e_map = bilateralFilter(imgC, L, 0, 1, ko_sigma_s, ko_sigma_r);
+e_map = e_map * 3.0 + 1;
 
-bef_map = bilateralFilter(imgC, L, 0, 1, ko_sigma_s, ko_sigma_r);
-
-%remapping bef_map [1, ..., alpha]
-alpha = 4.0;
-bef_map = bef_map * (alpha - 1) + 1;
-
-%scaling the final luminance
+%compute expanded luminance
 Lexp = L * (ko_display_max - ko_display_min) + ko_display_min;
-Lexp = Lexp .* bef_map;
+Lexp = Lexp .* e_map; %scale by e_map
 
 %change luminance
 imgOut = ChangeLuminance(img, L, Lexp);

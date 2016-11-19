@@ -1,13 +1,14 @@
-function HDRJPEG2000Enc(img, name, compRatio)
+function HDRJPEG2000Enc(img, name, compRatio, nBit)
 %
 %
-%       HDRJPEG2000Enc(img, name, compRatio)
+%       HDRJPEG2000Enc(img, name, compRatio, nBit)
 %
 %
 %       Input:
 %           -img: HDR image
 %           -name:  is output name of the image
 %           -compRatio: is JPEG output quality in [1, +inf]
+%           -nBit: quantization bits
 %
 %     Copyright (C) 2011-2015  Francesco Banterle
 % 
@@ -33,30 +34,33 @@ if(~exist('compRatio', 'var'))
     compRatio = 2;
 end
 
+if(~exist('nBit', 'var'))
+    nBit = 16;
+end
+
+if(nBit < 1)
+    nBit = 16;
+end
+
 if(compRatio < 1)
     compRatio = 1;
 end
 
-delta = 1e-6;
-
-%Range reduction
-nBit = 16;
-imgLog = log(img + delta);
-xMin = zeros(3, 1);
-xMax = zeros(3, 1);
+imgLog = log(img + 1e-6); %range reduction
 col = size(img, 3);
+xMin = zeros(col, 1);
+xMax = zeros(col, 1);
+metadata = [];
 for i = 1:col
     xMin(i) = min(min(imgLog(:,:,i)));
     xMax(i) = max(max(imgLog(:,:,i)));
-    imgLog(:,:,i) = (imgLog(:,:,i) - xMin(i)) / (xMax(i) - xMin(i));
-end
-imgLog = uint16(imgLog * (2^nBit - 1));
-
-%metadata string
-metadata = [];
-for i = 1:col
+    delta = xMax(i) - xMin(i);
+    imgLog(:,:,i) = (imgLog(:,:,i) - xMin(i)) / delta;
     metadata = [metadata, num2str(xMax(i)), ' ', num2str(xMin(i)), ' '];
 end
+metadata = [metadata, num2str(nBit)];
 
-imwrite(imgLog, [name,'.jp2'], 'CompressionRatio', compRatio, 'mode', 'lossy', 'Comment', metadata);
+imgLog = uint16(imgLog * (2^nBit - 1)); %quantization
+imwrite(imgLog, name, 'CompressionRatio', compRatio, 'mode', 'lossy', 'Comment', metadata);
+
 end
