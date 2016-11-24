@@ -1,12 +1,12 @@
-function imgOut = ColorCorrectionLinear(img, cc_factor)
+function imgOut = ColorCorrectionLinear(img, cc_s)
 %
-%       imgOut = ColorCorrectionLinear(img, cc_factor)
+%       imgOut = ColorCorrectionLinear(img, cc_s)
 %
 %       This function saturates/desaturates colors in img.
 %
 %       input:
 %         - img: an image.
-%         - cc_factor: the saturation correction's factor with values in
+%         - cc_s: the saturation correction's factor with values in
 %           [0,1]; it can be a gray scale image.
 %
 %       output:
@@ -39,12 +39,12 @@ function imgOut = ColorCorrectionLinear(img, cc_factor)
 %is it a three color channels image?
 check3Color(img);
 
-if(~exist('cc_factor', 'var'))
-    cc_factor = 0.5;
+if(~exist('cc_s', 'var'))
+    cc_s = 0.5;
 end
 
-if(cc_factor <= 0.0)
-    cc_factor = 0.5;
+if(cc_s <= 0.0)
+    cc_s = 0.5;
 end
 
 L = lum(img);
@@ -52,7 +52,7 @@ imgOut = zeros(size(img));
 
 for i=1:size(img, 3);
     M = (img(:,:,i) ./ L);
-    Mc = (M - 1.0) .* cc_factor + 1.0;
+    Mc = (M - 1.0) .* cc_s + 1.0;
     imgOut(:,:,i) = Mc .* L;
 end
 

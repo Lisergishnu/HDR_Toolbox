@@ -1,14 +1,14 @@
-function S = ColorCorrectionSigmoid(L_cone, sr_n, sigma_cone, B_cone)
+function S = ColorCorrectionSigmoid(L_cone, sr_n, c_sigma, c_B)
 %
-%         S = ColorCorrectionSigmoid(L_cone, sr_n, sigma_cone, B_cone)
+%         S = ColorCorrectionSigmoid(L_cone, sr_n, c_sigma, c_B)
 %
 %        This function computes color correction for sigmoid.
 %
 %        Input:
 %           -L_cone: the luminance value for cones
 %           -sr_n: sigmoid parameter (typically set to 0.73)
-%           -sigma_cone: saturation parameter for cones
-%           -B_cone: bleaching parameter for cones
+%           -c_sigma: saturation parameter for cones
+%           -c_B: bleaching parameter for cones
 %
 %        Output:
 %           -S: the saturation value
@@ -35,8 +35,8 @@ function S = ColorCorrectionSigmoid(L_cone, sr_n, sigma_cone, B_cone)
 %     in SIGGRAPH 2000
 %
 
-S = sr_n .* B_cone .* (L_cone.^sr_n) .* (sigma_cone.^sr_n);
-S = S ./ (L_cone.^sr_n + sigma_cone.^sr_n).^2;
+S = sr_n .* c_B .* (L_cone.^sr_n) .* (c_sigma.^sr_n);
+S = S ./ (L_cone.^sr_n + c_sigma.^sr_n).^2;
 
 end
 

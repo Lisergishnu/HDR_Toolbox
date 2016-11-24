@@ -1,14 +1,14 @@
-function imgOut = SchlickTMO(img, schlick_mode, schlick_p, schlick_bit, schlick_dL0, schlick_k)
+function imgOut = SchlickTMO(img, s_mode, s_p, s_bit, s_dL0, s_k)
 %
-%       imgOut = SchlickTMO(img, schlick_mode, schlick_p, schlick_bit,schlick_dL0)
+%       imgOut = SchlickTMO(img, s_mode, s_p, s_bit,s_dL0)
 %
 %
 %       Input:
 %           -img: input HDR image.
-%           -schlick_p: model parameter which takes values in [1,+inf].
-%           -schlick_bit: number of bit for the quantization step.
-%           -schlick_dL0: 
-%           -schlick_k: in [0,1].
+%           -s_p: model parameter which takes values in [1,+inf].
+%           -s_bit: number of bit for the quantization step.
+%           -s_dL0: 
+%           -s_k: in [0,1].
 %           -Mode = { 'standard', 'calib', 'nonuniform' }
 %
 %       Output
@@ -39,59 +39,52 @@ check13Color(img);
 
 check3Color(img);
 
-if(~exist('schlick_mode', 'var'))
-    schlick_mode = 'nonuniform';
+if(~exist('s_mode', 'var'))
+    s_mode = 'nonuniform';
 end
 
-if(~exist('schlick_bit', 'var'))
-    schlick_bit = 8;
+if(~exist('s_bit', 'var'))
+    s_bit = 8;
 end
 
-if(~exist('schlick_dL0',  'var'))
-    schlick_dL0 = 1;
+if(~exist('s_dL0',  'var'))
+    s_dL0 = 1;
 end
 
-if(~exist('schlick_k','var'))
-    schlick_k = 0.5;
+if(~exist('s_k','var'))
+    s_k = 0.5;
 end
 
-if(~exist('schlick_p', 'var'))
-    schlick_p = 1 / 0.005;
+if(~exist('s_p', 'var'))
+    s_p = 1 / 0.005;
 end
 
 %Luminance channel
 L = lum(img);
 
-%Max Luminance value 
+%compute max luminance
 LMax = max(L(:));
 
-%Min Luminance value 
+%comput min luminance
 LMin = min(L(:));
 if(LMin <= 0.0)
-     tmp = min(L(L > 0.0));
-     
-     if(~isempty(LMin))
-         LMin = tmp;
-     end
+     LMin = min(L(L > 0.0));
 end
 
-%Mode selection
-switch schlick_mode
+%mode selection
+switch s_mode
     case 'standard'
-        p = schlick_p;        
-        if(p < 1)
-            p = 1;
-        end
+        p = max([s_p, 1]);        
         
     case 'calib'
-        p = schlick_dL0 * LMax / (2^schlick_bit * LMin);
+        p = s_dL0 * LMax / (2^s_bit * LMin);
         
     case 'nonuniform'
-        p = schlick_dL0 * LMax / (2^schlick_bit * LMin);
-        p = p * (1 - schlick_k + schlick_k * L / sqrt(LMax * LMin));
+        p = s_dL0 * LMax / (2^s_bit * LMin);
+        p = p * (1 - s_k + s_k * L / sqrt(LMax * LMin));
 end
 
-%Dynamic Range Reduction
+%dynamic range reduction
 Ld = p .* L ./ ((p - 1) .* L + LMax);
 
 %Changing luminance

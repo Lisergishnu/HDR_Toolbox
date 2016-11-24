@@ -58,7 +58,7 @@ if(~exist('Lwa', 'var'))
     Lwa = exp(mean(tmp(:)));
 end
 
-%Range compression
+%range compression
 gamma_w  = gammaTumRushTMO(Lwa);
 gamma_d  = gammaTumRushTMO(Lda);
 gamma_wd = gamma_w / (1.855 + 0.4 * log(Lda));

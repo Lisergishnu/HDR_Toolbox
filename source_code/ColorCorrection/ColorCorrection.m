@@ -1,12 +1,12 @@
-function imgOut = ColorCorrection(img, cc_factor)
+function imgOut = ColorCorrection(img, cc_s)
 %
-%       imgOut = ColorCorrection(img, cc_factor)
+%       imgOut = ColorCorrection(img, cc_s)
 %
 %       This function saturates/desaturates colors in img.
 %
 %       input:
 %         - img: an image.
-%	      - cc_factor: the saturation correction's factor in (0,1].
+%	      - cc_s: the saturation correction's factor in (0,1].
 %                       If correction > 1 saturation is increased,
 %                       otherwise the image is desaturated. This parameter
 %                       can be a gray scale image.
@@ -35,22 +35,19 @@ function imgOut = ColorCorrection(img, cc_factor)
 %     in Photorealistic Rendering Techniques, 1995
 %
 
-%is it a three color channels image?
-check3Color(img);
-
-if(~exist('cc_factor', 'var'))
-    cc_factor = 0.5;
+if(~exist('cc_s', 'var'))
+    cc_s = 0.5;
 end
 
-if(cc_factor <= 0.0)
-    cc_factor = 0.5;
+if(cc_s <= 0.0)
+    cc_s = 0.5;
 end
 
 L = lum(img);
 imgOut = zeros(size(img));
 
 for i=1:size(img, 3);
-    imgOut(:,:,i) = ((img(:,:,i) ./ L).^cc_factor) .* L;
+    imgOut(:,:,i) = ((img(:,:,i) ./ L).^cc_s) .* L;
 end
 
 imgOut = RemoveSpecials(imgOut);
