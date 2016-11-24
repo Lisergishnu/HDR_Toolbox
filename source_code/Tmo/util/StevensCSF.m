@@ -1,17 +1,17 @@
-function y = gammaTumRushTMO(x)
+function y = StevensCSF(x)
 %
-%        y = gammaTumRushTMO(x)
+%        y = StevensCSF(x)
 %
 %
-%       The gamma function used in Tumblin-Rushmeier tone mapping operator
+%       This function computes Stevens? contrasts sensitivity
 %
 %       Input:
-%           -x: a value
+%           -x: a value in cd/m^2
 %
 %       Output:
-%           -y: gamma function result
+%           -y: the CSF application
 % 
-%     Copyright (C) 2010-15 Francesco Banterle
+%     Copyright (C) 2016 Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by

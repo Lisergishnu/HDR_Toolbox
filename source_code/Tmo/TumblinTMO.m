@@ -1,13 +1,13 @@
-function imgOut = TumblinRushmeierTMO(img, Lda, LdMax, CMax, Lwa)
+function imgOut = TumblinTMO(img, L_da, Ld_Max, C_Max, Lwa)
 %
-%        imgOut = TumblinRushmeierTMO(img, Lwa, Lda, CMax)   
+%        imgOut = TumblinTMO(img, L_da, Ld_Max, C_Max, Lwa)
 %
 %
 %        Input:
 %           -img: input HDR image
-%           -Lda: adaptation display luminance in [10,30] cd/m^2
-%           -LdMax: maximum display luminance in [80-180] cd/m^2
-%           -CMax: maximum LDR monitor contrast typically between 30 to 100
+%           -L_da: adaptation display luminance in [10,30] cd/m^2
+%           -Ld_Max: maximum display luminance in [80-180] cd/m^2
+%           -C_Max: maximum LDR monitor contrast typically between 30 to 100
 %           -Lwa: adaptation world luminance cd/m^2
 %
 %        Output:
@@ -27,30 +27,28 @@ function imgOut = TumblinRushmeierTMO(img, Lda, LdMax, CMax, Lwa)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 %     The paper describing this technique is:
-%     "Tone Reproduction for Realistic Images"
-% 	  by Jack Tumblin, Holly Rushmeier
-%     in IEEE Computer Graphics and Applications 1993
+%     "Two Methods for Display of High Contrast Images"
+% 	  by JACK TUMBLIN, JESSICA K. HODGINS, and BRIAN K. GUENTER
+%     in ACM Transactions on Graphics, Vol. 18, No. 1, January 1999, Pages 56?94.
 %
 
 %is it a three color channels image?
 check13Color(img);
 
-check3Color(img);
-
-%default parameters
-if(~exist('Lda', 'var'))
-    Lda = 20;
+%check parameters
+if(~exist('L_da', 'var'))
+    L_da = 20;
 end
 
-if(~exist('LdMax', 'var'))
-    LdMax = 100;
+if(~exist('Ld_Max', 'var'))
+    Ld_Max = 100;
 end
 
-if(~exist('CMax', 'var'))
-    CMax = 100;
+if(~exist('C_Max', 'var'))
+    C_Max = 100;
 end
 
-%Luminance channel
+%compute luminance channel
 L = lum(img);
 
 if(~exist('Lwa', 'var'))
@@ -59,15 +57,14 @@ if(~exist('Lwa', 'var'))
 end
 
 %range compression
-gamma_w  = gammaTumRushTMO(Lwa);
-gamma_d  = gammaTumRushTMO(Lda);
-gamma_wd = gamma_w / (1.855 + 0.4 * log(Lda));
-mLwa     = sqrt(CMax).^(gamma_wd - 1);
-Ld       = Lda * mLwa .* ((L/Lwa).^(gamma_w / gamma_d));
+gamma_w = StevensCSF(Lwa);
+gamma_d = StevensCSF(L_da);
+gamma_wd = gamma_w / (1.855 + 0.4 * log(L_da));
+mLwa = sqrt(C_Max).^(gamma_wd - 1);
+Ld = L_da * mLwa .* ((L/Lwa).^(gamma_w / gamma_d));
+Ld = Ld / Ld_Max;
 
-%Changing luminance
+%change luminance
 imgOut = ChangeLuminance(img, L, Ld);
-
-imgOut = imgOut / LdMax;
 
 end
