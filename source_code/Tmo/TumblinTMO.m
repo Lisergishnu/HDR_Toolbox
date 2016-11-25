@@ -1,17 +1,16 @@
-function imgOut = TumblinTMO(img, L_da, Ld_Max, C_Max, Lwa)
+function imgOut = TumblinTMO(img, L_da, Ld_Max, C_Max)
 %
-%        imgOut = TumblinTMO(img, L_da, Ld_Max, C_Max, Lwa)
+%        imgOut = TumblinTMO(img, L_da, Ld_Max, C_Max)
 %
 %
 %        Input:
-%           -img: input HDR image
+%           -img: an HDR image
 %           -L_da: adaptation display luminance in [10,30] cd/m^2
-%           -Ld_Max: maximum display luminance in [80-180] cd/m^2
+%           -Ld_Max: maximum display luminance in [80, 180] cd/m^2
 %           -C_Max: maximum LDR monitor contrast typically between 30 to 100
-%           -Lwa: adaptation world luminance cd/m^2
 %
 %        Output:
-%           -imgOut: tone mapped image in [0,1]
+%           -imgOut: a tone mapped image in [0,1]
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -51,17 +50,14 @@ end
 %compute luminance channel
 L = lum(img);
 
-if(~exist('Lwa', 'var'))
-    tmp = log(L + 2.3 * 1e-5);
-    Lwa = exp(mean(tmp(:)));
-end
+L_wa = logMean(L); %luminance world adaptation 
 
 %range compression
-gamma_w = StevensCSF(Lwa);
+gamma_w = StevensCSF(L_wa);
 gamma_d = StevensCSF(L_da);
 gamma_wd = gamma_w / (1.855 + 0.4 * log(L_da));
-mLwa = sqrt(C_Max).^(gamma_wd - 1);
-Ld = L_da * mLwa .* ((L/Lwa).^(gamma_w / gamma_d));
+m = C_Max.^((gamma_wd - 1) / 2.0);
+Ld = L_da * m .* ((L / L_wa).^(gamma_w / gamma_d));
 Ld = Ld / Ld_Max;
 
 %change luminance

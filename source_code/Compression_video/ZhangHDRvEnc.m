@@ -55,7 +55,7 @@ end
 
 nameOut = RemoveExt(name);
 fileExt = fileExtension(name);
-nameLogLuv = [nameOut,'_ZRB11_LUV.',fileExt];
+nameLogLuv = [nameOut, '_ZRB11_LUV.', fileExt];
 
 %number of bits is fixed due to limitation of MATLAB
 n_bits = 8;
@@ -85,7 +85,7 @@ for i=1:hdrv.totalFrames
     b(i) = param_b;
     
     %writing the frame out
-    writeVideo(writerObj, frameOut/255.0);
+    writeVideo(writerObj, frameOut / 255.0);
 end
 
 close(writerObj);
