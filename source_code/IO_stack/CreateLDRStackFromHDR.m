@@ -1,4 +1,4 @@
-function [stack, stack_exposure] = CreateLDRStackFromHDR( img, fstopDistance, geb_mode, lin_type, lin_fun)
+function [stack, stack_exposure] = CreateLDRStackFromHDR( img, fstops_distance, sampling_mode, lin_type, lin_fun)
 %
 %
 %       stack = CreateLDRStackFromHDR( img )
@@ -6,13 +6,13 @@ function [stack, stack_exposure] = CreateLDRStackFromHDR( img, fstopDistance, ge
 %
 %        Input:
 %           -img: input HDR image
-%           -fstopDistance: delta f-stop for generating exposures
-%           -geb_mode: how to samples the image:
-%                  - if geb_mode = 'uniform', exposures are sampled
+%           -fstops_distance: delta f-stop for generating exposures
+%           -sampling_mode: how to samples the image:
+%                  - if sampling_mode = 'uniform', exposures are sampled
 %                    in an uniform way
-%                  - if geb_mode = 'histogram', exposures are sampled using
+%                  - if sampling_mode = 'histogram', exposures are sampled using
 %                    the histogram using a greedy approach
-%                  - if geb_mode = 'selected', we assume that fstopDistance
+%                  - if sampling_mode = 'selected', we assume that fstops_distance
 %                  is an array with the f-stops selected
 %
 %           -lin_type: the linearization function:
@@ -56,14 +56,12 @@ function [stack, stack_exposure] = CreateLDRStackFromHDR( img, fstopDistance, ge
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-[r,c,col] = size(img);
-
-if(~exist('fstopDistance', 'var'))
-    fstopDistance = 1;
+if(~exist('fstops_distance', 'var'))
+    fstops_distance = 1;
 end
 
-if(~exist('geb_mode', 'var'))
-    geb_mode = 'histogram';
+if(~exist('sampling_mode', 'var'))
+    sampling_mode = 'histogram';
 end
 
 %is the linearization type of the images defined?
@@ -79,37 +77,46 @@ end
 %luminance channel
 L = lum(img);
 
-switch(geb_mode)
+switch(sampling_mode)
     case 'histogram'
-        stack_exposure = 2.^ExposureHistogramCovering(img);
+        stack_exposure = 2.^ExposureHistogramSampling(img);
         
     case 'uniform'
-        MinL = MaxQuart(L(L > 0.0), 0.01);
-        MaxL = MaxQuart(L(L > 0.0), 0.9999);
+        minL = min(L(L > 0));
+        maxL = max(L(L > 0));
+                
+        if(minL == maxL)
+            error('CreateLDRStackFromHDR: all pixels have the same luminance value');
+        end
+        
+        if(maxL <= (256 * minL))
+            error('CreateLDRStackFromHDR: There is no need of sampling; i.e., 8-bit dynamic range.');                        
+        end
 
-        minExposure = floor(log2(MaxL));
-        maxExposure = ceil( log2(MinL));
-
-        tMax = -(maxExposure - 1);
-        tMin = -(minExposure + 1);
-        stack_exposure = 2.^(tMin:fstopDistance:tMax);
+        delta = 1e-6;
+        minExposure = floor(log2(maxL + delta));
+        maxExposure = ceil( log2(minL + delta));
+        
+        tMin = -(minExposure);
+        tMax = -(maxExposure + 4);
+        stack_exposure = 2.^(tMin:fstops_distance:tMax);
         
     case 'selected'
-        stack_exposure = 2.^fstopDistance;
+        stack_exposure = 2.^fstops_distance;
         
     otherwise
         error('ERROR: wrong mode for sampling the HDR image');
 end
 
-%allocate memory for the stack
-n = length(stack_exposure);
-stack = zeros(r, c, col, n);
-
 %calculate exposures
+n = length(stack_exposure);
 for i=1:n
-    img_e = (stack_exposure(i) * img);
+    img_e = img * stack_exposure(i);
     expo = ClampImg(ApplyCRF(img_e, lin_type, lin_fun), 0, 1);
-    stack(:,:,:,i) = expo;
+    
+    if(min(expo(:)) < 1.0 & max(expo(:)) > 0.0)
+        stack(:,:,:,i) = expo;
+    end
 end
 
 end

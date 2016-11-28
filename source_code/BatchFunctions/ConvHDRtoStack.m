@@ -57,7 +57,7 @@ for i=1:length(lst)
     L = imresize(L, 0.5, 'bilinear');
     
     if(bSampling)
-        fstops = ExposureHistogramCovering(L, 1024);
+        fstops = ExposureHistogramSampling(L, 8, 2);
     else
         minL = round(log2(min(L(:))));
         maxL = round(log2(max(L(:))));

@@ -27,13 +27,13 @@ function imgOut = BestExposureTMO(img)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-%is it a three color channels image?
+%is it a gray-scale/three color channels image?
 check13Color(img);
 
 checkNegative(img);
 
-fstops = ExposureHistogramCovering(img, 1024, 0);
+fstops = ExposureHistogramSampling(img, 8, 0);
 
-imgOut = ClampImg(img * 2^fstops(2), 0.0, 1.0);
+imgOut = ClampImg(img * 2^fstops(1), 0.0, 1.0);
 
 end

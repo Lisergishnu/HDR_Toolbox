@@ -46,8 +46,10 @@ if((r1 ~= r2) || (c1 ~= c2))
 end
 
 %normalization step
-imgHDR = imgHDR / max(imgHDR(:));
-imgTMO = imgTMO / max(imgTMO(:));
+max_TMO = max(imgTMO(:));
+max_HDR = max(imgHDR(:));
+imgHDR = imgHDR / max_HDR;
+imgTMO = imgTMO / max_HDR;
 
 %conversion in the XYZ color space
 imgTMO_XYZ = ConvertRGBtoXYZ(imgTMO, 0);

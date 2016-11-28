@@ -16,8 +16,7 @@ function [imgOut, lin_fun] = BuildHDR(stack, stack_exposure, lin_type, lin_fun, 
 %
 %           -lin_type: the linearization function:
 %                      - 'linear': images are already linear
-%                      - 'gamma2.2': gamma function 2.2 is used for
-%                                    linearization;
+%                      - 'gamma': a gamma function is used for linearization;
 %                      - 'sRGB': images are encoded using sRGB
 %                      - 'LUT': the lineraziation function is a look-up
 %                               table defined stored as an array in the 
@@ -25,7 +24,7 @@ function [imgOut, lin_fun] = BuildHDR(stack, stack_exposure, lin_type, lin_fun, 
 %                      - 'poly': the lineraziation function is a polynomial
 %                               stored in lin_fun 
 %
-%           -lin_fun: it is the camera response function of the camera that
+%           -lin_fun: it is the inverse camera response function of the camera that
 %           took the pictures in the stack. If it is empty, [], and 
 %           type is 'LUT' it will be estimated using Debevec and Malik's
 %           method.
@@ -102,7 +101,7 @@ end
 
 %is the linearization type of the images defined?
 if(~exist('lin_type', 'var'))
-    lin_type = 'gamma2.2';
+    lin_type = 'gamma';
 end
 
 %do we have the inverse camera response function?
@@ -146,16 +145,14 @@ if((strcmp(lin_type, 'LUT') == 1) && isempty(lin_fun))
     [lin_fun, ~] = DebevecCRF(single(stack) / scale, stack_exposure);        
 end
 
-gamma_k = strfind(lin_type, 'gamma');
-if(gamma_k == 1)
-    tmp_str = lin_type(gamma_k + 5:end);
-    gamma_value = str2double(tmp_str);
-    if(gamma_value <= 0.0)
-        gamma_value = 2.2;
+if(strcmp(lin_type, 'gamma') == 1)
+    if(isempty(lin_fun))
+        lin_fun = 2.2;
+    else
+        if(lin_fun <= 0.0)
+            lin_fun = 2.2;
+        end
     end
-    
-    lin_type = 'gamma';
-    lin_fun = gamma_value;
 end
 
 %this value is added for numerical stability
