@@ -1,4 +1,4 @@
-function frameHDR = ZhangHDRvDecFrame(frameLUV, table_y, param_a, param_b)
+function frameHDR = ZhangHDRvDecFrame(frameLUV, table_y)
 %
 %
 %       frameHDR = ZhangHDRvDecFrame(frameLUV, table_y)
@@ -7,8 +7,6 @@ function frameHDR = ZhangHDRvDecFrame(frameLUV, table_y, param_a, param_b)
 %       Input:
 %           -frameLUV: logLUV representation at 8-bit
 %           -y: encoding look-up table
-%           -param_a: adaptive multiplicative parameter
-%           -param_b: adaptive additive parameter
 %
 %       Output:
 %           -frameHDR: the reconstructed HDR frame
@@ -51,6 +49,6 @@ end
 
 frameLUV(:,:,1) = L;
 
-frameHDR = ALogLuv2float(frameLUV, param_a, param_b);
+frameHDR = LogLuv2float(frameLUV);
 
 end

@@ -64,7 +64,7 @@ switch hdrv.type
 
     case 'TYPE_HDRV_ZRB11'
         frameLUV = read(hdrv.stream, frameCounter); 
-        frame = ZhangHDRvDecFrame(frameLUV, hdrv.info.table_y(frameCounter,:), hdrv.info.a(frameCounter), hdrv.info.b(frameCounter));        
+        frame = ZhangHDRvDecFrame(frameLUV, hdrv.info.table_y(frameCounter,:));        
 
     case 'TYPE_HDRV_MAI11'
         frameTMO = read(hdrv.streamTMO, frameCounter); 
