@@ -16,8 +16,7 @@ function [imgOut, lin_fun] = BuildHDR(stack, stack_exposure, lin_type, lin_fun, 
 %
 %           -lin_type: the linearization function:
 %                      - 'linear': images are already linear
-%                      - 'gamma2.2': gamma function 2.2 is used for
-%                                    linearization;
+%                      - 'gamma': a gamma function is used for linearization;
 %                      - 'sRGB': images are encoded using sRGB
 %                      - 'LUT': the lineraziation function is a look-up
 %                               table defined stored as an array in the 
@@ -25,7 +24,7 @@ function [imgOut, lin_fun] = BuildHDR(stack, stack_exposure, lin_type, lin_fun, 
 %                      - 'poly': the lineraziation function is a polynomial
 %                               stored in lin_fun 
 %
-%           -lin_fun: it is the camera response function of the camera that
+%           -lin_fun: it is the inverse camera response function of the camera that
 %           took the pictures in the stack. If it is empty, [], and 
 %           type is 'LUT' it will be estimated using Debevec and Malik's
 %           method.
@@ -44,8 +43,10 @@ function [imgOut, lin_fun] = BuildHDR(stack, stack_exposure, lin_type, lin_fun, 
 %               domain.
 %               - 'log': it merges different LDR images in the natural
 %               logarithmic domain.
-%               - 'robertson': it merges different LDR images in the linear
-%               domain using Robertson et al.'s weighting.
+%               - 'w_time_sq': it merges different LDR images in the
+%               linear; the weight is scaled by the square of the exposure
+%               time.
+%               
 %
 %           -bMeanWeight: if it is set to 1, it will compute a single
 %           weight for each exposure (not a weight for each color channel)
@@ -100,7 +101,7 @@ end
 
 %is the linearization type of the images defined?
 if(~exist('lin_type', 'var'))
-    lin_type = 'gamma2.2';
+    lin_type = 'gamma';
 end
 
 %do we have the inverse camera response function?
@@ -117,6 +118,10 @@ stack_exposure_check = unique(stack_exposure);
 
 if(length(stack_exposure) ~= length(stack_exposure_check))
     error('The stack contains images with the same exposure value. Please remove these duplicated images!');
+end
+
+if(min(stack_exposure(:)) <= 0.0)
+    error('The stack contains images with negative or zero exposure value. Please remove this images!');
 end
 
 %merging
@@ -140,23 +145,18 @@ if((strcmp(lin_type, 'LUT') == 1) && isempty(lin_fun))
     [lin_fun, ~] = DebevecCRF(single(stack) / scale, stack_exposure);        
 end
 
-gamma_k = strfind(lin_type, 'gamma');
-if(gamma_k == 1)
-    tmp_str = lin_type(gamma_k + 5:end);
-    gamma_value = str2double(tmp_str);
-    if(gamma_value <= 0.0)
-        gamma_value = 2.2;
+if(strcmp(lin_type, 'gamma') == 1)
+    if(isempty(lin_fun))
+        lin_fun = 2.2;
+    else
+        if(lin_fun <= 0.0)
+            lin_fun = 2.2;
+        end
     end
-    
-    lin_type = 'gamma';
-    lin_fun = gamma_value;
 end
 
 %this value is added for numerical stability
 delta_value = 1.0 / 65536.0;
-
-[~, index_sat] = min(stack_exposure);
-slice_sat = [];
 
 %for each LDR image...
 for i=1:n
@@ -167,30 +167,22 @@ for i=1:n
 
     %linearization of the image
     tmpStack = RemoveCRF(tmpStack, lin_type, lin_fun);
-    
-    %fetch exposure time
-    t = stack_exposure(i);     
-    
-    if(i == index_sat)
-        slice_sat = tmpStack / t;
-    end
-   
+      
     %sum things up...
-    t = stack_exposure(i);    
-    if(t > 0.0)                
-        switch merge_type
-            case 'linear'
-                imgOut = imgOut + (weight .* tmpStack) / t;
-                totWeight = totWeight + weight;
-            
-            case 'log'
-                imgOut = imgOut + weight .* (log(tmpStack + delta_value) - log(t));
-                totWeight = totWeight + weight;                
-            
-            case 'robertson'
-                imgOut = imgOut + (weight .* tmpStack) * t;
-                totWeight = totWeight + weight * t * t;
-        end
+    dt_i = stack_exposure(i);    
+              
+    switch merge_type
+        case 'linear'
+            imgOut = imgOut + (weight .* tmpStack) / dt_i;
+            totWeight = totWeight + weight;
+
+        case 'log'
+            imgOut = imgOut + weight .* (log(tmpStack + delta_value) - log(dt_i));
+            totWeight = totWeight + weight;                
+
+        case 'w_time_sq'
+            imgOut = imgOut + (weight .* tmpStack) * dt_i;
+            totWeight = totWeight + weight * dt_i * dt_i;
     end
 end
 
@@ -204,21 +196,54 @@ end
 saturation = 1e-4;
 
 if(~isempty(totWeight <= saturation))
-    disp('WARNING: the stack has saturated pixels!');
+    [~, i_sat] = min(stack_exposure);
+    [~, i_noisy] = max(stack_exposure);
 
+    i_med = round(length(stack_exposure) / 2);
+    med = ClampImg(single(stack(:,:,:,i_med)) / scale, 0.0, 1.0);
+    
+    tmpStack = ClampImg(single(stack(:,:,:,i_sat)) / scale, 0.0, 1.0);
+    img_sat = RemoveCRF(tmpStack, lin_type, lin_fun);
+    img_sat = img_sat / stack_exposure(i_sat);
+       
     mask = zeros(size(totWeight));
-    mask(totWeight <= saturation) = 1;
+    mask(totWeight <= saturation & med > 0.5) = 1;
     mask = max(mask, [], 3);
     
-    if(exist('debug_mode', 'var'))
-        imwrite(mask, 'saturation_mask.bmp');
-    end
+    if(max(mask(:)) > 0.5)
+        disp('WARNING: the stack has saturated pixels!');
+        if(exist('debug_mode', 'var'))
+            imwrite(mask, 'mask_sat.bmp');
+        end
 
-    for i=1:col
-        tmp = imgOut(:,:,i);
-        slice_i = slice_sat(:,:,i);
-        tmp(mask == 1) = slice_i(mask == 1);
-        imgOut(:,:,i) = tmp;
+        for i=1:col
+            io_i = imgOut(:,:,i);
+            is_i = img_sat(:,:,i);
+            io_i(mask == 1) = is_i(mask == 1);
+            imgOut(:,:,i) = io_i;
+        end
+    end
+    
+    tmpStack = ClampImg(single(stack(:,:,:,i_noisy)) / scale, 0.0, 1.0);
+    img_noisy = RemoveCRF(tmpStack, lin_type, lin_fun);
+    img_noisy = img_noisy / stack_exposure(i_noisy); 
+    
+    mask = zeros(size(totWeight));
+    mask(totWeight <= saturation & med < 0.5) = 1;
+    mask = max(mask, [], 3);
+    
+    if(max(mask(:)) > 0.5)
+        disp('WARNING: the stack has noisy dark pixels!');        
+        if(exist('debug_mode', 'var'))
+            imwrite(mask, 'mask_noisy.bmp');
+        end
+
+        for i=1:col
+            io_i = imgOut(:,:,i);
+            in_i = img_noisy(:,:,i);
+            io_i(mask == 1) = in_i(mask == 1);
+            imgOut(:,:,i) = io_i;
+        end
     end
 end
 

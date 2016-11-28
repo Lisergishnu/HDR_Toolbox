@@ -47,7 +47,7 @@ if(N < 0)
 
         imgOut = RemoveCRF(image_jpg, 'poly', pp);
 
-        tmp_err = abs(imgOut - image_raw);
+        tmp_err = abs(imgOut - image_raw).^2;
         tmp_err = mean(tmp_err(:));
 
         if(err < 0)
@@ -80,6 +80,8 @@ function pp = RAWCRFn(image_raw, image_jpg, N, thr)
     
     bFlag = 0;
 
+    %bDebug = 1;
+    
     for i=1:col
         slice_raw = image_raw(:,:,i);
         slice_jpg = image_jpg(:,:,i);
@@ -89,6 +91,19 @@ function pp = RAWCRFn(image_raw, image_jpg, N, thr)
         if(~isempty(indx))    
             x = slice_jpg(indx);
             y = slice_raw(indx);
+            
+%             
+%             if(bDebug)
+%                 figure(i);
+%                 c = zeros(256,256);
+%                 for k =1:length(x)
+%                     tx = ClampImg(round(x(k) * 255) + 1, 1, 256);
+%                     ty = ClampImg(round(y(k) * 255) + 1, 1, 256);
+%                     c(256 - ty + 1, tx) = c(256 - ty + 1, tx) + 1;
+%                 end
+%                 imshow(c);
+%             end
+            
             pp(:, i) = polyfit(x, y, N);
         else
             bFlag = 1;

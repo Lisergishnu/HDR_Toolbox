@@ -1,17 +1,17 @@
-function imgOut = RotateYLL(img, angle)
+function l = luma(img)
 %
-%        imgOut = RotateYLL(img, angle)
+%       l = luma(img)
 %
-%        This function rotates an environment map encoded with LL encoding
-%        by an angle (degrees) around the Y-axis.
+%       This function calculates the luma
 %
-%        Input:
-%           -img: an environment map encoded with LL encoding
-%           -angle: rotation angle (degrees) around the Y-axis
-%        Output:
-%           -imgOut: img rotated by angle around the Y-axis
 %
-%     Copyright (C) 2016 Francesco Banterle
+%       input:
+%           img: an RGB image
+%
+%       output:
+%           l: luminance as XYZ color 
+%
+%     Copyright (C) 2016  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -27,8 +27,18 @@ function imgOut = RotateYLL(img, angle)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-cols = size(img, 2);
+col = size(img, 3);
 
-imgOut = imShiftWrap(img, (angle * cols) / 360);
+switch col
+    case 1
+        l = img;
+
+    case 3
+        l = 0.299 * img(:,:,1) + 0.587 * img(:,:,2) + 0.114 * img(:,:,3);
+        
+    otherwise
+        l = mean(img, 3); 
+        disp('Mean of channels was computed; the input image is not an RGB or luminance image!');
+end
 
 end

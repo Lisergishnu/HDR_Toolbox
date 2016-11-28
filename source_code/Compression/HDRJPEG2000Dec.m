@@ -26,26 +26,16 @@ function imgRec = HDRJPEG2000Dec(name)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-%Read tone mapping data
-info = imfinfo(name);
+info = imfinfo(name); %read metadata
+decoded = sscanf(cell2mat(info.Comments), '%g', 7);
 
-decoded = sscanf(cell2mat(info.Comments), '%g', 6);
-xMin = zeros(3, 1);
-xMax = zeros(3, 1);
-
-c = 1;
-for i=1:2:6
-    xMax(c) = decoded(i);
-    xMin(c) = decoded(i + 1);
-    c = c + 1;
-end
-
-%Decompression
-nBit = 16;
-delta = 1e-6;
+nBit = decoded(end);
 imgRec = double(imread(name)) / (2^nBit - 1);
-for i = 1:size(imgRec, 3)
-    imgRec(:,:,i) = exp(imgRec(:,:,i) * (xMax(i) - xMin(i)) + xMin(i)) - delta;
+for i=1:size(imgRec, 3)
+    xMax = decoded((i - 1) * 2 + 1);
+    xMin = decoded((i - 1) * 2 + 2);
+    %range expansion
+    imgRec(:,:,i) = exp(imgRec(:,:,i) * (xMax - xMin) + xMin) - 1e-6;
 end
 
 imgRec(imgRec < 0.0) = 0;

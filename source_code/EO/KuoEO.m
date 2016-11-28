@@ -1,10 +1,10 @@
-function imgOut = KuoEO(img, LMax, gammaRemoval)
+function imgOut = KuoEO(img, maxOutput, gammaRemoval)
 %
-%       imgOut = KuoEO(img, LMax, gammaRemoval)
+%       imgOut = KuoEO(img, maxOutput, gammaRemoval)
 %
 %        Input:
 %           -img:  input LDR image with values in [0,1]
-%           -LMax: maximum luminance output in cd/m^2
+%           -maxOutput: maximum luminance output in cd/m^2
 %           -gammaRemoval: the gamma value to be removed if known
 %
 %        Output:
@@ -31,26 +31,37 @@ function imgOut = KuoEO(img, LMax, gammaRemoval)
 %     in VCIP 2012, San Diego, CA, USA
 %
 
-%is it a three color channels image?
 check13Color(img);
 
-disp('Note the SVM classifier is missing, please select LMax carefully.');
-disp('This has to be chosen based on the content; indoor, outdoor, daylight, etc.');
+if(~exist('maxOutput', 'var'))
+    maxOutput = 3000.0;
+end
 
-if(~exist('gammaRemoval','var'))
-    gammaRemoval = -1.0;
+if(maxOutput < 0.0)
+    maxOutput = 3000.0;
+end
+
+if(~exist('gammaRemoval', 'var'))
+    gammaRemoval = -1;
 end
 
 if(gammaRemoval > 0.0)
-    img = img.^gammaRemoval;
+    img=img.^gammaRemoval;
 end
+
+%
+%
+%
+
+disp('Note the SVM classifier is missing, please select maxOutput carefully.');
+disp('This has to be chosen based on the content such as indoor, outdoor, daylight, etc.');
 
 %Calculate luminance
 Ld = lum(img);
 
 %Inverse Schlick Operator
 p = 30; %as in the original paper
-Lexp = (Ld * LMax) ./ (p * (1 - Ld) + Ld);
+Lexp = (Ld * maxOutput) ./ (p * (1 - Ld) + Ld);
 
 %Computing the expand map
 expand_map = KuoExpandMap(Ld, gammaRemoval);

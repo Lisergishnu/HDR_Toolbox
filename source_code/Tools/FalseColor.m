@@ -137,6 +137,9 @@ L = L - LMin;
 LMax = LMax - LMin;
 L = L / LMax;
 
+contrast = 1.0;
+L = L.^(1.0 / contrast);
+
 %Create a color map
 n_bit = 8;
 res = 2^n_bit;
@@ -152,10 +155,13 @@ if(FC_Vis)%Visualization
     imshow(imgOut, 'InitialMagnification', 'fit');
     colormap(color_map);
          
-    hcb = colorbar('Ticks', 0:(1/4):1 ,'YtickLabel',{sprintf('%3.2f', yticks(1)), sprintf('%3.2f', yticks(2)), sprintf('%3.2f', yticks(3)), sprintf('%3.2f', yticks(4)), sprintf('%3.2f', yticks(5))});
-    set(hcb,'FontSize',14);
-    set(hcb,'FontName','Arial');
-    set(get(hcb,'XLabel'),'String','Lux','FontSize',14,'FontName','Arial Bold');
+    hcb = colorbar('Ticks', 0:(1/4):1 ,'YtickLabel',{sprintf('%2.1e', yticks(1)), sprintf('%2.1e', yticks(2)), sprintf('%2.1e', yticks(3)), sprintf('%2.1e', yticks(4)), sprintf('%2.1e', yticks(5))});
+    set(hcb,'FontSize', 24);
+    set(hcb,'FontName', 'Times New Roman');
+    
+    pos = hcb.Position;
+    
+    set(get(hcb,'XLabel'), 'Rotation', 0, 'String', 'Lux', 'FontSize', 24, 'FontName', 'Times New Roman', 'Position', [pos(1), 0.0 , 0.0]);
 end
 
 end

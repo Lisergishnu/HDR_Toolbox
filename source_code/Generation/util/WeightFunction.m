@@ -79,7 +79,7 @@ switch weight_type
         weight = zeros(size(img));
         
         for i=1:size(img, 3)
-            d_pp = polyder(pp(:, i));
+            d_pp = polyder(pp(:, i)');
             weight(:,:,i) = polyval(pp(:, i), img) ./ polyval(d_pp, img);
         end
         
@@ -96,7 +96,7 @@ switch weight_type
         weight(indx2) = Zmax - img(indx2);
         
         if(delta > 0.0)
-            weight = weight / delta;
+            weight = weight / tr;
         end
         
         weight(weight < 0) = 0;

@@ -1,8 +1,10 @@
-function imgOut = MertensTMO(img, folder_name, format, imageStack, wE, wS, wC, bWarning)
+function imgOut = MertensTMO(img, folder_name, format, imageStack, weights, bWarning)
 %
 %
-%        imgOut = MertensTMO(img, folder_name, format, imageStack, wE, wS, wC, bWarning )
+%        imgOut = MertensTMO(img, folder_name, format, imageStack, weights, bWarning )
 %
+%        This function applies exposure fusion operator to an image or a
+%        stack.
 %
 %        Input:
 %           -img: input HDR image
@@ -13,16 +15,18 @@ function imgOut = MertensTMO(img, folder_name, format, imageStack, wE, wS, wC, b
 %                    images in the current folder_name
 %           -imageStack: an exposure stack of LDR images; in case img=[],
 %                        and folder_name='' and format=''
-%           -wE: the weight for the well exposedness in [0,1]. Well exposed
-%                pixels are taken more into account if the wE is near 1
-%                otherwise they are not taken into account.
-%           -wS: the weight for the saturation in [0,1]. Saturated
-%                pixels are taken more into account if the wS is near 1
-%                otherwise they are not taken into account.
-%           -wC: the weight for the contrast in [0,1]. Strong edgese are 
-%                taken more into account if the wE is near 1
-%                otherwise they are not taken into account.
-%           -bMertensDebug: a debugging flag to turn on/off the gamma
+%           -weights: a three value vector:
+%               -weights(1): the weight for the well exposedness in [0,1]. Well exposed
+%                   pixels are taken more into account if the wE is near 1
+%                   otherwise they are not taken into account.
+%               -weights(2): the weight for the saturation in [0,1]. Saturated
+%                   pixels are taken more into account if the wS is near 1
+%                   otherwise they are not taken into account.
+%               -weights(3): the weight for the contrast in [0,1]. Strong edgese are 
+%                    taken more into account if the wE is near 1
+%                    otherwise they are not taken into account.
+%           -iterations: number of iterations for improving the movements'
+%           -bWarning: a debugging flag to turn on/off the gamma
 %           encoding notice.
 %
 %        Output:
@@ -53,17 +57,13 @@ function imgOut = MertensTMO(img, folder_name, format, imageStack, wE, wS, wC, b
 %
 
 %default parameters if they are missing
-if(~exist('wE', 'var'))
-    wE = 1.0;
+if(~exist('weights', 'var'))
+    weights = ones(1, 3);
 end
 
-if(~exist('wS', 'var'))
-    wS = 1.0;
-end
-
-if(~exist('wC', 'var'))
-    wC = 1.0;
-end
+wE = weights(1);
+wS = weights(2);
+wC = weights(3);
 
 if(~exist('bWarning', 'var'))
     bWarning = 1;

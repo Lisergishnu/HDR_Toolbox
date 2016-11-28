@@ -48,6 +48,7 @@ switch lin_type
 
     case 'poly'
         imgOut = zeros(size(img));
+        
         for c=1:size(lin_fun, 2)
             imgOut(:,:,c) = polyval(lin_fun(:,c), img(:,:,c));
         end

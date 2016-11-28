@@ -1,16 +1,16 @@
-function imgOut = RotateYLL(img, angle)
+function y = StevensCSF(x)
 %
-%        imgOut = RotateYLL(img, angle)
+%        y = StevensCSF(x)
 %
-%        This function rotates an environment map encoded with LL encoding
-%        by an angle (degrees) around the Y-axis.
 %
-%        Input:
-%           -img: an environment map encoded with LL encoding
-%           -angle: rotation angle (degrees) around the Y-axis
-%        Output:
-%           -imgOut: img rotated by angle around the Y-axis
+%       This function computes Stevens? contrasts sensitivity
 %
+%       Input:
+%           -x: a value in cd/m^2
+%
+%       Output:
+%           -y: the CSF application
+% 
 %     Copyright (C) 2016 Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
@@ -27,8 +27,10 @@ function imgOut = RotateYLL(img, angle)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-cols = size(img, 2);
-
-imgOut = imShiftWrap(img, (angle * cols) / 360);
+y = zeros(size(x));
+y(x <= 100) = 1.855 + 0.4 * log10(x(x <= 100) + 2.3 * 1e-5);
+y(x > 100) = 2.655;
 
 end
+
+

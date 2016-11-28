@@ -4,7 +4,7 @@ function Wc = MertensContrast(L)
 %        Wc = Contrast(L)
 %
 % 
-%     Copyright (C) 2010 Francesco Banterle
+%     Copyright (C) 2010-2016 Francesco Banterle
 %  
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ function Wc = MertensContrast(L)
 %
 
 H = [0 1 0; 1 -4 1; 0 1 0];
-imgEdge = imfilter(L,H,'replicate');
+imgEdge = imfilter(L, H, 'replicate');
 Wc = abs(LaplacianFilter(imgEdge));
 
 end

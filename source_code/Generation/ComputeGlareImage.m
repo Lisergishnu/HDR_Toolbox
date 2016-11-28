@@ -1,4 +1,4 @@
-function imgGlare = ComputeGlareImage( img, PSF, hot_pixels_pos)
+function imgGlare = ComputeGlareImage( img, PSF, hot_pixels_pos, C)
 %
 %       imgGlare = ComputeGlareImage( img, PSF )
 %
@@ -32,17 +32,41 @@ function imgGlare = ComputeGlareImage( img, PSF, hot_pixels_pos)
 
 m = size(hot_pixels_pos, 2);
 
-hot_pixels_col = zeros(m, size(img, 3));
+imgGlare = zeros(size(img));
+
+[r,c,col] = size(img);
+
+[X, Y] = meshgrid(1:c, 1:r);
+
 for i=1:m
-    hot_pixels_col(i, :) = img(hot_pixels_pos(2, i), hot_pixels_pos(1, i), :); 
+    x_p = hot_pixels_pos(1, i);
+    y_p = hot_pixels_pos(2, i);
+
+    r = max(sqrt((X-x_p).^2 + (Y-y_p).^2), 2);
+    value = C(1) + C(2)./r + C(3)./(r.^2) + C(4)./(r.^3);
+    
+    tmp_glare = zeros(size(img));
+    
+    for j=1:col
+        tmp_glare(:,:,j) = value * img(y_p, x_p, j);
+    end
+    
+    imgGlare = imgGlare + tmp_glare;
+    
 end
 
-PSF_col = zeros(size(PSF,1), size(PSF, 2), size(img, 3));
-for i=1:size(img, 3)
-    PSF_col(:,:,i) = PSF;
-end
-
-[imgGlare, ~] = imSplat(size(img, 1), size(img, 2), PSF_col, hot_pixels_pos, hot_pixels_col);
+% 
+% hot_pixels_col = zeros(m, size(img, 3));
+% for i=1:m
+%     hot_pixels_col(i, :) = img(hot_pixels_pos(2, i), hot_pixels_pos(1, i), :); 
+% end
+% 
+% 
+% PSF_col = zeros(size(PSF,1), size(PSF, 2), size(img, 3));
+% for i=1:size(img, 3)
+%     PSF_col(:,:,i) = PSF;
+% end
+%[imgGlare, ~] = imSplat(size(img, 1), size(img, 2), PSF_col, hot_pixels_pos, hot_pixels_col);
 
 %compensation
 while(1)

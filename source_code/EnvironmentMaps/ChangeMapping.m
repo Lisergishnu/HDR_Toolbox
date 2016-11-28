@@ -1,7 +1,6 @@
 function imgOut = ChangeMapping(img, mappingIn, mappingOut)
 %
-%new
-%        imgOut = ChangeMapping(img,mapping1,mapping2)
+%        imgOut = ChangeMapping(img, mappingIn, mappingOut)
 %
 %
 %        Input:
@@ -91,7 +90,7 @@ else
     Y1 = real(round(Y1));
     
     for i=1:col
-        imgOut(:,:,i) = interp2(X, Y, img(:,:,i), X1, Y1, '*cubic');
+        imgOut(:,:,i) = interp2(X, Y, img(:,:,i), X1, Y1, 'spline');
     end
 
     [rM, cM, ~] = size(imgOut);

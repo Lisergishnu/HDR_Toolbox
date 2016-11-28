@@ -40,18 +40,18 @@ function frameHDR = MaiHDRvDecFrame(frameTMO, l, v, frameR, r_min, r_max)
 
 %decompression of the residuals frame
 frameR = frameR(:,:,1);
-frameR = double(frameR)/255.0;
-frameR = frameR*(r_max-r_min) + r_min;
+frameR = double(frameR) / 255.0;
+frameR = frameR * (r_max - r_min) + r_min;
 
 %decompression of the tone mapped frame
-frameTMO = double(frameTMO)/255.0;
+frameTMO = double(frameTMO) / 255.0;
 L = lum(frameTMO);
 %inverse tone mapping with (l,v);
 Lw = 10.^interp1(v, l, L, 'linear'); 
 
 %expanding luminance
 epsilon = 0.05;
-h = exp(frameR).*(Lw+epsilon);
+h = exp(frameR) .* (Lw + epsilon);
 
 %adding colors
 frameHDR = RemoveSpecials(ChangeLuminance(frameTMO, L, h));

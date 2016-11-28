@@ -87,7 +87,7 @@ if(max_1 > 1.0 || max_2 > 1.0)
     r_2 = max_2 / min_2;
     
     if(r_1 > 1000 || r_2 > 1000)
-        Lwa = MAX([logMean(im1g), logMean(im2g)]);
+        Lwa = max([logMean(im1g), logMean(im2g)]);
         im1g = im1g / Lwa;
         im2g = im2g / Lwa;
 

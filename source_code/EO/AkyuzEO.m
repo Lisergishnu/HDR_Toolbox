@@ -1,18 +1,18 @@
-function imgOut = AkyuzEO(img, Akyuz_Max, Akyuz_gamma, gammaRemoval)
+function imgOut = AkyuzEO(img, maxOutput, a_gamma, gammaRemoval)
 %
-%       imgOut = Akyuz(img, Akyuz_Max, Akyuz_gamma, gammaRemoval)
+%       imgOut = AkyuzEO(img, maxOutput, a_gamma, gammaRemoval)
 %
 %
 %        Input:
 %           -img: input LDR image with values in [0,1]
-%           -Akyuz_Max: the maximum output luminance value defines the 
-%           -Akyuz_gamma: this value defines the appearance
+%           -maxOutput: the maximum output luminance value defines the 
+%           -a_gamma: this value defines the appearance
 %           -gammaRemoval: the gamma value to be removed if known
 %
 %        Output:
 %           -imgOut: an expanded image
 %
-%     Copyright (C) 2011  Francesco Banterle
+%     Copyright (C) 2011-2016  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -28,15 +28,14 @@ function imgOut = AkyuzEO(img, Akyuz_Max, Akyuz_gamma, gammaRemoval)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-%is it a three color channels image?
 check13Color(img);
 
-if(~exist('Akyuz_Max', 'var'))
-    Akyuz_Max = 3000;
+if(~exist('maxOutput', 'var'))
+    maxOutput = 3000.0;
 end
 
-if(~exist('Akyuz_gamma', 'var'))
-    Akyuz_gamma = 1.0;
+if(maxOutput < 0.0)
+    maxOutput = 3000.0;
 end
 
 if(~exist('gammaRemoval', 'var'))
@@ -47,11 +46,18 @@ if(gammaRemoval > 0.0)
     img=img.^gammaRemoval;
 end
 
+%
+%
+%
+
+if(~exist('a_gamma', 'var'))
+    a_gamma = 1.0;
+end
+
 L = lum(img);
 L_max = max(L(:));
 L_min = min(L(:));
-
-Lexp = Akyuz_Max * (((L - L_min) / (L_max - L_min)).^Akyuz_gamma);
+Lexp = maxOutput * (((L - L_min) / (L_max - L_min)).^a_gamma);
 
 %Removing the old luminance
 imgOut = ChangeLuminance(img, L, Lexp);

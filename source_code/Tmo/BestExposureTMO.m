@@ -1,16 +1,15 @@
-function imgOut = NormalizeTMO(img, bRobust)
+function imgOut = BestExposureTMO(img)
 %
-%        imgOut = NormalizeTMO(img, bRobust)
+%        imgOut = BestExposureTMO(img)
 %
 %       
-%        Simple TMO, which divides an image by the maximum
+%        Simple TMO, which divides an image by the best exposure
 %
 %        Input:
 %           -img: input HDR image
-%           -bRobust: to enable the use of robust statistics
 %
 %        Output:
-%           -imgOut: tone mapped image
+%           -imgOut: a tone mapped image
 % 
 %     Copyright (C) 2010-15 Francesco Banterle
 % 
@@ -28,28 +27,13 @@ function imgOut = NormalizeTMO(img, bRobust)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-%is it a three color channels image?
+%is it a gray-scale/three color channels image?
 check13Color(img);
 
 checkNegative(img);
 
-if(~exist('bRobust', 'var'))
-    bRobust = 1;
-end
+fstops = ExposureHistogramSampling(img, 8, 0);
 
-%Luminance channel
-L = lum(img);
-
-if(bRobust)%compute the max luminance
-    maxValue = MaxQuart(L, 0.99);
-else
-    maxValue = max(L(:));
-end
-
-if(maxValue <= 0.0)
-    maxValue = 1.0;
-end
-
-imgOut = img / maxValue;
+imgOut = ClampImg(img * 2^fstops(1), 0.0, 1.0);
 
 end

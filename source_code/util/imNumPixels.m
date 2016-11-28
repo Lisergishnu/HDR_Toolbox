@@ -1,17 +1,20 @@
-function imgOut = RotateYLL(img, angle)
+function n = imNumPixels(img)
 %
-%        imgOut = RotateYLL(img, angle)
 %
-%        This function rotates an environment map encoded with LL encoding
-%        by an angle (degrees) around the Y-axis.
+%       n = imNumPixels(img)
 %
-%        Input:
-%           -img: an environment map encoded with LL encoding
-%           -angle: rotation angle (degrees) around the Y-axis
-%        Output:
-%           -imgOut: img rotated by angle around the Y-axis
+%       This function computes image key.
 %
-%     Copyright (C) 2016 Francesco Banterle
+%       Input:
+%           -img: an image
+%
+%       Output:
+%           -n: the numer of pixel in img
+% 
+%       This function segments an image into different dynamic range zones
+%       based on their order of magnitude.
+%
+%     Copyright (C) 2016  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -27,8 +30,7 @@ function imgOut = RotateYLL(img, angle)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-cols = size(img, 2);
-
-imgOut = imShiftWrap(img, (angle * cols) / 360);
+n = size(img, 1) * size(img, 2);
 
 end
+

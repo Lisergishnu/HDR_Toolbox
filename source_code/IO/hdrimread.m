@@ -45,7 +45,7 @@ end
 
 img = [];
 hdr_info = [];
-bLDR = 0;
+bLDR = 1;
 
 switch extension
     
@@ -54,6 +54,7 @@ switch extension
         try
 	    %HDR Toolbox's HDR Reader
             [img, hdr_info] = read_rgbe(filename);  
+            bLDR = 0;
         catch err  
             try 
                 %MATLAB HDR Reader
@@ -67,6 +68,7 @@ switch extension
     case 'exr'
         try
             img = read_exr(filename);
+            bLDR = 0;            
         catch err
             disp('Warning: this .exr file can not be read.');
         end
@@ -75,6 +77,7 @@ switch extension
     case 'pfm'
         try
             img = read_pfm(filename);
+            bLDR = 0;            
         catch
             disp('Warning: this .pfm file can not be read.');
         end
@@ -83,8 +86,8 @@ switch extension
     case 'jp2'
         try
             img = HDRJPEG2000Dec(filename);
+            bLDR = 0;            
         catch err
-            bLDR = 1;            
             disp('Warning: this .jpg2 file cannot be read as an HDR JPEG 2000 file.');
         end        
 end

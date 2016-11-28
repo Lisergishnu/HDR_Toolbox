@@ -1,11 +1,11 @@
-function imgOut = WardGlobalTMO(img, Ld_Max)
+function imgOut = WardGlobalTMO(img, Ld_max)
 %
-%       imgOut = WardTMO(img,Ld_Max)
+%       imgOut = WardTMO(img, Ld_max)
 %
 %
 %       Input:
 %           -img: input HDR image
-%           -Ld_Max: Maximum LDR luminance
+%           -Ld_max: maximum monitor LDR luminance in cd/m^2
 %
 %       Output
 %           -imgOut: tone mapped image
@@ -36,24 +36,22 @@ check13Color(img);
 
 checkNegative(img);
 
-if(~exist('Ld_Max', 'var'))
-    Ld_Max = 100;
+if(~exist('Ld_max', 'var'))
+    Ld_max = 100;
 end
 
-if(Ld_Max<0)
-    Ld_Max = 100;
+if(Ld_max < 0)
+    Ld_max = 100;
 end
 
 %Luminance channel
 L = lum(img);
 
-%harmonic mean
-Lwa = logMean(L);
+Lwa = logMean(L); %compute geometry mean
 
 %contrast scale
-m = (((1.219 + (Ld_Max / 2)^0.4) / (1.219 + Lwa^0.4))^2.5);
+m = (((1.219 + (Ld_max / 2)^0.4) / (1.219 + Lwa^0.4))^2.5);
 
-imgOut = (img * m);
-imgOut = RemoveSpecials(imgOut / Ld_Max); %Just to have values in [0,1]
+imgOut = ClampImg(img * m / Ld_max, 0.0, 1.0);
 
 end

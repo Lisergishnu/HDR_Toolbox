@@ -1,17 +1,16 @@
-function y = gammaTumRushTMO(x)
-%
-%        y = gammaTumRushTMO(x)
+function imgOut = pyrBlendHDR(img1, img2, weight)
 %
 %
-%       The gamma function used in Tumblin-Rushmeier tone mapping operator
+%        imgOut = pyrBlendHDR(img1, img2, weight)
 %
-%       Input:
-%           -x: a value
 %
-%       Output:
-%           -y: gamma function result
-% 
-%     Copyright (C) 2010-15 Francesco Banterle
+%        Input:
+%           -img1: an image to be blended
+%           -img2: an image to be blended
+%           -weight: the weights for img1
+%
+%        Output:
+%           -imgOut: the final blended image
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -27,10 +26,18 @@ function y = gammaTumRushTMO(x)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-y = zeros(size(x));
-y(x <= 100) = 1.855 + 0.4 * log10(x(x <= 100) + 2.3 * 1e-5);
-y(x > 100) = 2.655;
+% img1 = img1 ./ (1.0 + img1);
+% img2 = img2 ./ (1.0 + img2);
+
+gamma_inv = 1.0 / 2.2;
+
+img1 = img1.^gamma_inv;
+img2 = img2.^gamma_inv;
+
+imgOut = pyrBlend(img1, img2, weight);
+
+imgOut = imgOut.^2.2;
+
+%imgOut = imgOut ./ (1.0 - imgOut);
 
 end
-
-

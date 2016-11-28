@@ -36,12 +36,19 @@ function imgOut = HuoEO(img, hou_s, hou_theta, gammaRemoval)
 %     in Journal of Computational Information Systems 9: 9 (2013) 3461–3468
 %
 
-%is it a three color channels image?
 check13Color(img);
 
 if(~exist('gammaRemoval', 'var'))
     gammaRemoval = -1.0;
 end
+
+if(gammaRemoval > 0.0)
+    img = img.^gammaRemoval;
+end
+
+%
+%
+%
 
 if(~exist('hou_s', 'var'))
     hou_s = 1.6; %default parameter from the original paper
@@ -49,10 +56,6 @@ end
 
 if(~exist('hou_theta', 'var'))
     hou_theta = 1e-5;
-end
-
-if(gammaRemoval > 0.0)
-    img = img.^gammaRemoval;
 end
 
 %Calculate luminance

@@ -1,20 +1,16 @@
-function S = ColorCorrectionSigmoid(L_cone, sr_n, c_sigma, c_B)
+function imgOut = SimulateSpatialExposure(img, fstops)
 %
-%         S = ColorCorrectionSigmoid(L_cone, sr_n, c_sigma, c_B)
+%       imgOut = SimulateSpatialExposure(img, fstops)
 %
-%        This function computes color correction for sigmoid.
 %
 %        Input:
-%           -L_cone: the luminance value for cones
-%           -sr_n: sigmoid parameter (typically set to 0.73)
-%           -c_sigma: saturation parameter for cones
-%           -c_B: bleaching parameter for cones
+%           -img: an HDR image
 %
 %        Output:
-%           -S: the saturation value
+%           -imgOut:
 %
 %     Copyright (C) 2016  Francesco Banterle
-%
+% 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
 %     the Free Software Foundation, either version 3 of the License, or
@@ -29,14 +25,24 @@ function S = ColorCorrectionSigmoid(L_cone, sr_n, c_sigma, c_B)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 %
-%     The paper describing this technique is:
-%     "Time-Dependent Visual Adaptation For Fast Realistic Image Display"
-% 	  by Sumanta N. Pattanaik, Jack Tumblin, Hector Yee, Donald P. Greenberg
-%     in SIGGRAPH 2000
-%
 
-S = sr_n .* c_B .* (L_cone.^sr_n) .* (c_sigma.^sr_n);
-S = S ./ (L_cone.^sr_n + c_sigma.^sr_n).^2;
+exposure_times = 2.^fstops;
+
+if(length(exposure_times) > 4)
+    exposure_times = exposure_times(1:4);
+else
+    if(length(exposure_times) < 4)
+        error('Missing required exposures!');
+    end
+end
+
+imgOut = zeros(size(img));
+imgOut(1:2:end,1:2:end,:) = exposure_times(1) * img(1:2:end, 1:2:end, :);
+imgOut(1:2:end,2:2:end,:) = exposure_times(2) * img(1:2:end, 2:2:end, :);
+imgOut(2:2:end,1:2:end,:) = exposure_times(3) * img(2:2:end, 1:2:end, :);
+imgOut(2:2:end,2:2:end,:) = exposure_times(4) * img(2:2:end, 2:2:end, :);
+
+imgOut = ClampImg(imgOut.^(1.0/2.2), 0.0, 1.0);
 
 end
 

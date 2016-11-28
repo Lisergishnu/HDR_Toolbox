@@ -1,20 +1,20 @@
-function imgOut = ColorCorrection(img, schlick_correction)
+function imgOut = ColorCorrection(img, cc_s)
 %
-%       imgOut = ColorCorrection(img, schlick_correction)
+%       imgOut = ColorCorrection(img, cc_s)
 %
-%       This function saturates/desaturates colors in img
+%       This function saturates/desaturates colors in img.
 %
 %       input:
-%         - img: an image
-%	      - schlick_correction: the saturation correction's factor.
-%                       If correction>1 saturation is increased,
+%         - img: an image.
+%	      - cc_s: the saturation correction's factor in (0,1].
+%                       If correction > 1 saturation is increased,
 %                       otherwise the image is desaturated. This parameter
 %                       can be a gray scale image.
 %
 %       output:
-%         - imgOut: corrected values
+%         - imgOut: corrected values.
 %
-%     Copyright (C) 2011  Francesco Banterle
+%     Copyright (C) 2011-16  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -35,20 +35,19 @@ function imgOut = ColorCorrection(img, schlick_correction)
 %     in Photorealistic Rendering Techniques, 1995
 %
 
-%is it a three color channels image?
-check3Color(img);
-
-if(~exist('schlick_correction', 'var'))
-    schlick_correction = 0.5;
+if(~exist('cc_s', 'var'))
+    cc_s = 0.5;
 end
 
-schlick_correction = ClampImg(schlick_correction, 0.0, 1.0);
+if(cc_s <= 0.0)
+    cc_s = 0.5;
+end
 
 L = lum(img);
 imgOut = zeros(size(img));
 
 for i=1:size(img, 3);
-    imgOut(:,:,i) = ((img(:,:,i) ./ L).^schlick_correction) .* L;
+    imgOut(:,:,i) = ((img(:,:,i) ./ L).^cc_s) .* L;
 end
 
 imgOut = RemoveSpecials(imgOut);

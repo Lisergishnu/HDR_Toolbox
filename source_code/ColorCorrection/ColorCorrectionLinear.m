@@ -1,13 +1,13 @@
-function imgOut = ColorCorrectionLinear(img, mantiuk_p)
+function imgOut = ColorCorrectionLinear(img, cc_s)
 %
-%       imgOut = ColorCorrectionLinear(img, mantiuk_p)
+%       imgOut = ColorCorrectionLinear(img, cc_s)
 %
-%       This function saturates/desaturates colors in img
+%       This function saturates/desaturates colors in img.
 %
 %       input:
-%         - img: an image
-%         - mantiuk_p: the saturation correction's factor with values in
-%           [0,1]; it can be a gray scale image
+%         - img: an image.
+%         - cc_s: the saturation correction's factor with values in
+%           [0,1]; it can be a gray scale image.
 %
 %       output:
 %         - imgOut: corrected values
@@ -39,18 +39,20 @@ function imgOut = ColorCorrectionLinear(img, mantiuk_p)
 %is it a three color channels image?
 check3Color(img);
 
-if(~exist('mantiuk_p', 'var'))
-    mantiuk_p = 0.5;
+if(~exist('cc_s', 'var'))
+    cc_s = 0.5;
 end
 
-mantiuk_p = ClampImg(mantiuk_p, 0.0, 1.0);
+if(cc_s <= 0.0)
+    cc_s = 0.5;
+end
 
 L = lum(img);
 imgOut = zeros(size(img));
 
 for i=1:size(img, 3);
     M = (img(:,:,i) ./ L);
-    Mc = (M - 1.0) .* mantiuk_p + 1.0;
+    Mc = (M - 1.0) .* cc_s + 1.0;
     imgOut(:,:,i) = Mc .* L;
 end
 

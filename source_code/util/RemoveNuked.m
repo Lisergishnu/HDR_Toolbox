@@ -1,18 +1,18 @@
-function imgOut = NormalizeTMO(img, bRobust)
+function imgOut = RemoveNuked(img)
 %
-%        imgOut = NormalizeTMO(img, bRobust)
 %
-%       
-%        Simple TMO, which divides an image by the maximum
+%        imgOut = RemoveNuked(img)
+%
+%
+%        Description: this function removes nuked pixels from an image
 %
 %        Input:
-%           -img: input HDR image
-%           -bRobust: to enable the use of robust statistics
+%           -img: an input image
 %
 %        Output:
-%           -imgOut: tone mapped image
-% 
-%     Copyright (C) 2010-15 Francesco Banterle
+%           -imgOut: an image without nuked pixels
+%
+%     Copyright (C) 2016  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -28,28 +28,12 @@ function imgOut = NormalizeTMO(img, bRobust)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-%is it a three color channels image?
-check13Color(img);
+imgOut = img;
 
-checkNegative(img);
+mask = [0 1 0; 1 0 1; 0 1 0] / 4;
 
-if(~exist('bRobust', 'var'))
-    bRobust = 1;
-end
+img_mean = imfilter(img, mask);
 
-%Luminance channel
-L = lum(img);
-
-if(bRobust)%compute the max luminance
-    maxValue = MaxQuart(L, 0.99);
-else
-    maxValue = max(L(:));
-end
-
-if(maxValue <= 0.0)
-    maxValue = 1.0;
-end
-
-imgOut = img / maxValue;
+imgOut(imgOut > 1e1) = img_mean(imgOut > 1e1);
 
 end

@@ -55,7 +55,7 @@ end
 
 nameOut = RemoveExt(name);
 fileExt = fileExtension(name);
-nameLogLuv = [nameOut,'_ZRB11_LUV.',fileExt];
+nameLogLuv = [nameOut, '_ZRB11_LUV.', fileExt];
 
 %number of bits is fixed due to limitation of MATLAB
 n_bits = 8;
@@ -78,19 +78,16 @@ for i=1:hdrv.totalFrames
     [frame, hdrv] = hdrvGetFrame(hdrv, i);
 
     %encoding it
-    [frameOut, y, param_a, param_b] = ZhangFrameEnc(frame, n_bits);   
+    [frameOut, y] = ZhangFrameEnc(frame, n_bits);   
     table_y(i,:) = y;
     
-    a(i) = param_a;
-    b(i) = param_b;
-    
     %writing the frame out
-    writeVideo(writerObj, frameOut/255.0);
+    writeVideo(writerObj, frameOut / 255.0);
 end
 
 close(writerObj);
 
-save([nameOut,'_ZRB11_info.mat'], 'table_y', 'a', 'b');
+save([nameOut,'_ZRB11_info.mat'], 'table_y');
 
 hdrvclose(hdrv);
 

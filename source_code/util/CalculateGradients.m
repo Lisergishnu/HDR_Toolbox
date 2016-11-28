@@ -1,14 +1,13 @@
-function [I_gx, I_gy] = CalculateGradients(I)
+function I_g = CalculateGradients(I)
 %
 %
-%       [I_gx, I_gy] = CalculateGradients(I)
+%       I_g = CalculateGradients(I)
 %
 %       Input:
 %           -I: an input image
 %
 %       Output:
-%           -I_gx: gradient on the x direction
-%           -I_gy: gradient on the y direction
+%           -I_g: gradients of I
 %
 %     Copyright (C) 2011-15  Francesco Banterle
 % 
@@ -31,5 +30,7 @@ kernelY = [0,1,0;  0,0,0;  0,-1,0];
 
 I_gx = imfilter(I, kernelX, 'same') / 2;
 I_gy = imfilter(I, kernelY, 'same') / 2;
+
+I_g = struct('fx', I_gx, 'fy', I_gy);
 
 end

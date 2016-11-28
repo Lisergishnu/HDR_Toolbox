@@ -1,7 +1,7 @@
-function [frameOut, y, param_a, param_b] = ZhangFrameEnc(frame, n_bits)
+function [frameOut, y] = ZhangFrameEnc(frame, n_bits)
 %
 %
-%       frameOut = ZhangFrameEnc(img, n_bits)
+%       [frameOut, y] = ZhangFrameEnc(frame, n_bits)
 %
 %
 %       Input:
@@ -11,8 +11,6 @@ function [frameOut, y, param_a, param_b] = ZhangFrameEnc(frame, n_bits)
 %       Output:
 %           -frameOut: frame to be
 %           -y: encoding look-up table
-%           -param_a: adaptive multiplicative parameter
-%           -param_b: adaptive additive parameter
 %
 %     Copyright (C) 2013-2014  Francesco Banterle
 % 
@@ -34,27 +32,29 @@ if(~exist('n_bits','var'))
     n_bits = 8;
 end
 
-[frameOut, param_a, param_b] = float2ALogLuv(frame, 16);
+frameOut = float2LogLuv(frame, 16);
 L = round(frameOut(:,:,1));
 
-[y, Y_min, Y_max] = ZhangQuantization(L, n_bits);
+[y, ~, ~] = ZhangQuantization(L, n_bits);
 
 [r,c] = size(L);
 n = r * c;
 
-%applying look-up table
+%apply a look-up table
 for i=1:n
     delta = abs(y - L(i));
-    [value, index] = min(delta(:));
+    [~, index] = min(delta(:));
     L(i) = index;    
 end
 
-%Computing DWT2 transform
+%compute DWT2 transform
 filterType = 'db3';
 pyr  = dwt2Decomposition(L,  filterType, 5);
-%Filtering the pyramid
+
+%filter the pyramid
 pyr = ZhangDWTScaling(pyr);
-%Reconstruction 
+
+%reconstruct 
 L_denoised = round(dwt2Reconstruction(pyr, filterType));
 
 frameOut(:,:,1) = L_denoised;
