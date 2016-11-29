@@ -18,7 +18,7 @@ disp('1) Load "CS_Warwick.hdr" HDR image');
 img = hdrimread('CS_Warwick.hdr');
 
 disp('2) Change the mapping from Longitude Latitude to Cube Map');
-imgOut = ChangeMapping(img,'LongitudeLatitude','CubeMap');
+imgOut = ChangeMapping(img,'LongitudeLatitude', 'CubeMap');
 
 disp('3) Visualization of the new HDR image using gamma encoding');
 ldr = GammaTMO(imgOut,2.2,0.0,1);

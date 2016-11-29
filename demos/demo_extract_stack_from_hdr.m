@@ -27,7 +27,7 @@ format = 'jpg';
 
 mkdir(name_folder_h);
 
-[stack, stack_exposure] = CreateLDRStackFromHDR( img, 1.2, 'histogram', 'gamma', 2.2);
+[stack, stack_exposure] = CreateLDRStackFromHDR( img, 2, 'histogram', 'gamma', 2.2);
 
 for i=1:size(stack, 4)
     name_out = [name_folder_h, '/exp_', num2str(stack_exposure(i)), '.', format];

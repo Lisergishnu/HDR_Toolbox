@@ -43,6 +43,7 @@ end
 
 nBin = 2^nBit;
 nBit_half = round(nBit / 2);
+
 fstops = [];
 [histo, bound, ~] = HistogramHDR(img, nBin, 'log2', [], 0, 0);
 dMM = (bound(2) - bound(1)) / nBin;
