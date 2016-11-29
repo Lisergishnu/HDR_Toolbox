@@ -14,7 +14,7 @@
 
 clear all;
 
-x = 0:255;
+x = (0:255) / 255;
 
 name_folder = 'stack';
 format = 'jpg';
@@ -51,6 +51,7 @@ plot(x, lin_fun_mn(:,1), 'r', x, lin_fun_mn(:,2),'g', x, lin_fun_mn(:,3), 'b');
 %
 % Robertson
 %
+
 
 disp('5) Estimate the CRF using RobertsonCRF');
 lin_r = RobertsonCRF(stack, stack_exposure);

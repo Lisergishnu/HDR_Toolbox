@@ -116,7 +116,7 @@ for i=1:col
 end
 
 if(bNormalize)
-    max_val = max(max_lin_fun(:))
+    max_val = max(max_lin_fun(:));
     
     for i=1:col
         lin_fun(:,i) = lin_fun(:,i) / max_val;

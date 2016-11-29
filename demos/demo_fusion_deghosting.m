@@ -9,7 +9,7 @@ clear all;
 
 %Pence and Kautz
 disp('1) Applying fusion + deghosting operator by Pece and Kautz to images in a stack folder');
-img_merged = PeceKautzMerge([], 'stack_ghost', 'jpg', 1, 1, 1, 1, 3, 17, 0.5);
+img_merged = PeceKautzMerge([], 'stack_ghost', 'jpg', [], 1, 3, 17, 0.5);
 
 disp('2) Showing the image after fusion, note that there is no need of gamma correction!');
 h = figure(1);
@@ -21,7 +21,7 @@ imwrite(img_merged, 'hong_kong_pece_kautz.png');
 
 %Mertens et al.
 disp('4) Comparison with the Mertens et al. fusion operator');
-img_merged = MertensTMO([], 'stack_ghost', 'jpg', [], 1, 1, 1);
+img_merged = MertensTMO([], 'stack_ghost', 'jpg', []);
 
 disp('5) Showing the image after fusion, note that there is no need of gamma correction!');
 h = figure(2);

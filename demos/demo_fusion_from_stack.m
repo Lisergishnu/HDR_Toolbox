@@ -30,7 +30,7 @@ imwrite(imgTMO, 'office_raman_TMO.png');
 
 %Mertens's method
 disp('4) Applying Fusion Operator by Mertens et al to images in stack folder');
-imgTMO = MertensTMO([], 'stack', 'jpg', [], 1, 1, 1);
+imgTMO = MertensTMO([], 'stack', 'jpg', []);
 
 disp('5) Showing the image after fusion, note that there is no need of gamma correction!');
 h = figure(2);
