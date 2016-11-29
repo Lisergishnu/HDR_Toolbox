@@ -97,7 +97,7 @@ switch(sampling_mode)
         minExposure = floor(log2(maxL + delta));
         maxExposure = ceil( log2(minL + delta));
         
-        tMin = -(minExposure);
+        tMin = -(minExposure    );
         tMax = -(maxExposure + 4);
         stack_exposure = 2.^(tMin:fstops_distance:tMax);
         
@@ -110,11 +110,14 @@ end
 
 %calculate exposures
 n = length(stack_exposure);
+
+min_val = 1 / 256;
+
 for i=1:n
     img_e = img * stack_exposure(i);
     expo = ClampImg(ApplyCRF(img_e, lin_type, lin_fun), 0, 1);
     
-    if(min(expo(:)) < 1.0 & max(expo(:)) > 0.0)
+    if(min(expo(:)) <= (1.0 - min_val) & max(expo(:)) >= min_val)
         stack(:,:,:,i) = expo;
     end
 end

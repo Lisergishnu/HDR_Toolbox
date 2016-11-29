@@ -72,6 +72,6 @@ Ld = c2*log(1.0 + L_wa) ./ log(2.0 + 8.0 * ((L_wa / LMax_wa).^c1));
 %Changing luminance
 imgOut = ChangeLuminance(img, L, Ld);
 
-disp('Note that tone mapped images with DragoTMO should be gamma corrected with function GammaDrago.m');
+%disp('Note that tone mapped images with DragoTMO should be gamma corrected with function GammaDrago.m');
 
 end
