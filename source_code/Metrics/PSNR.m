@@ -1,4 +1,3 @@
-
 function val = PSNR(imgReference, imgDistorted)
 %
 %
@@ -29,42 +28,28 @@ function val = PSNR(imgReference, imgDistorted)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-if(isSameImage(imgReference, imgDistorted) == 0)
-    error('The two images are different they can not be used.');
+[imgReference, imgDistorted, domain] = checkDomains(imgReference, imgDistorted);
+
+mse = MSE(imgReference, imgDistorted);
+
+switch domain
+    case 'uint8'
+        max_value = 2^8 - 1;
+        
+    case 'uint16'
+        max_value = 2^16 - 1;
+        
+    case 'single'
+        max_value = max(imgReference(:));
+        
+    case 'double'
+        max_value = max(imgReference(:));      
 end
-
-b1 = 0;
-if(isa(imgReference, 'uint8'))
-    b1 = 1;
-    imgReference = double(imgReference) / 255.0;
+        
+if(mse > 0.0)
+    val = 20 * log10(max_value / sqrt(mse));
+else
+    error('PSNR: mse values is zero or negative!'); 
 end
-
-if(isa(imgReference, 'uint16'))
-    b1 = 1;
-    imgReference = double(imgReference) / 65535.0;
-end
-
-b2 = 0;
-if(isa(imgDistorted, 'uint8'))
-    b2 = 1;
-    imgDistorted = double(imgDistorted) / 255.0;
-end
-
-if(isa(imgDistorted, 'uint16'))
-    b2 = 1;
-    imgDistorted = double(imgDistorted) / 65535.0;
-end
-
-if(xor(b1, b2))
-    disp('PSNR is not very meaningful for HDR images/videos, please consider mPSNR instead!');
-end
-
-imgReference = ClampImg(imgReference, 0, 1);
-imgDistorted = ClampImg(imgDistorted, 0, 1);
-
-valueMSE = MSE(imgReference, imgDistorted);
-
-%val = 10 * log10(1.0 / valueMSE);
-val = - 10 * log10(valueMSE);
 
 end

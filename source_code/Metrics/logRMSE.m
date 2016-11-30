@@ -1,4 +1,4 @@
-function val = logRMSE(imgReference, imgDistorted)
+function rmse = logRMSE(imgReference, imgDistorted)
 %
 %
 %      val = logRMSE(imgReference, imgDistorted)
@@ -9,7 +9,7 @@ function val = logRMSE(imgReference, imgDistorted)
 %           -imgDistorted: input target image
 %
 %       Output:
-%           -val: RMSE in Log2 Space for three channels images. Lower
+%           -rmse: RMSE in Log2 Space for three channels images. Lower
 %           values means better quality.
 % 
 %     Copyright (C) 2006-2015  Francesco Banterle
@@ -32,14 +32,16 @@ if(isSameImage(imgReference, imgDistorted) == 0)
     error('The two images are different they can not be used.');
 end
 
-subImage = imgReference ./ imgDistorted;
 acc = zeros(size(imgReference, 1), size(imgReference, 2));
 
-for i=1:size(img, 3)
-    tmp = RemoveSpecials(log2(subImage(:,:,i)));
+col = size(img, 3);
+for i=1:col
+    tmp = log2(imgReference + 1e-6) - log2(imgDistorted + 1e-6);
     acc = acc + tmp.^2;
 end
 
-val = sqrt(mean(acc(:)));
+mse = mean(acc(:)) / col;
+
+rmse = sqrt(mse);
 
 end

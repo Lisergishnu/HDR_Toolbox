@@ -108,4 +108,6 @@ else
     imgOut = RemoveSpecials(imgOut);
 end
 
+imgOut(imgOut < 0.0) = 0.0;
+
 end
