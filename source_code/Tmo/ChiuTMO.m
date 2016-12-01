@@ -1,25 +1,25 @@
-function imgOut = ChiuTMO(img, chiu_k, chiu_sigma, chiu_clamping, chiu_glare, chiu_glare_n, chiu_glare_width)
+function imgOut = ChiuTMO(img, c_k, c_sigma, c_clamping, c_glare, c_glare_n, c_glare_width)
 %
-%       imgOut = ChiuTMO(img, k, sigma, clamping, glare, glare_n, glare_width)
+%       imgOut = ChiuTMO(img, c_k, c_sigma, c_clamping, c_glare, c_glare_n, c_glare_width)
 %
 %
 %        Input:
 %           -img: input HDR image
-%           -k: scale correction
-%           -sigma: local window size
-%           -clamping: number of iterations for clamping and reducing
+%           -c_k: scale correction
+%           -c_sigma: local window size
+%           -c_clamping: number of iterations for clamping and reducing
 %                      halos. If it is negative, the clamping will not be
 %                      calculate in the final image.
-%           -glare: [0,1]. The default value is 0.8. If it is negative,
+%           -c_glare: [0,1]. The default value is 0.8. If it is negative,
 %                          the glare effect will not be calculated in the
 %                          final image.
-%           -glare_n: appearance (1,+Inf]. Default is 8.
-%           -glare_width: size of the filter for calculating glare. Default is 121.
+%           -c_glare_n: appearance (1,+Inf]. Default is 8.
+%           -c_glare_width: size of the filter for calculating glare. Default is 121.
 %
 %        Output:
 %           -imgOut: tone mapped image in linear space.
 % 
-%     Copyright (C) 2010-15 Francesco Banterle
+%     Copyright (C) 2010-16 Francesco Banterle
 %  
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -52,44 +52,44 @@ r = size(img, 1);
 c = size(img, 2);
 
 %default parameters
-if(~exist('chiu_k', 'var'))
-    chiu_k = 8;
+if(~exist('c_k', 'var'))
+    c_k = 8;
 end
 
-if(~exist('chiu_sigma', 'var'))
-    chiu_sigma = round(16 * max([r, c]) / 1024) + 1;
+if(~exist('c_sigma', 'var'))
+    c_sigma = round(16 * max([r, c]) / 1024) + 1;
 end
 
-if(~exist('chiu_clamping', 'var'))
-    chiu_clamping = 500;
+if(~exist('c_clamping', 'var'))
+    c_clamping = 500;
 end
 
-if(~exist('chiu_glare', 'var'))
-    chiu_glare = 0.8;
+if(~exist('c_glare', 'var'))
+    c_glare = 0.8;
 end
 
-if(~exist('chiu_glare_n', 'var'))
-    chiu_glare_n = 8;    
+if(~exist('c_glare_n', 'var'))
+    c_glare_n = 8;    
 end
 
-if(~exist('chiu_glare_width', 'var'))
-    chiu_glare_width = 121;
+if(~exist('c_glare_width', 'var'))
+    c_glare_width = 121;
 end
 
 %cheking parameters
-if(chiu_k <= 0)
-    chiu_k = 8;
+if(c_k <= 0)
+    c_k = 8;
 end
 
-if(chiu_sigma <= 0)
-    chiu_sigma = round(16 * max([r, c]) / 1024) + 1;
+if(c_sigma <= 0)
+    c_sigma = round(16 * max([r, c]) / 1024) + 1;
 end
     
-%calculating S
-blurred = RemoveSpecials(1 ./ (chiu_k * GaussianFilter(L, chiu_sigma)));
+%calculate S
+blurred = RemoveSpecials(1 ./ (c_k * GaussianFilter(L, c_sigma)));
 
-%clamping S
-if(chiu_clamping > 0)
+%clamp S
+if(c_clamping > 0)
     iL = RemoveSpecials(1./L);
     indx = find(blurred >= iL);
     blurred(indx) = iL(indx);
@@ -99,7 +99,7 @@ if(chiu_clamping > 0)
           0.113 0.227 0.113;...
           0.080 0.113 0.080];
 
-    for i=1:chiu_clamping
+    for i=1:c_clamping
         blurred = imfilter(blurred, H2, 'replicate');
     end
 end
@@ -107,26 +107,26 @@ end
 %dynamic range reduction
 Ld = L .* blurred;
 
-if(chiu_glare > 0)
-    %Calculation of a kernel with a Square Root shape for simulating glare
-    window2 = round(chiu_glare_width / 2);
+if(c_glare > 0)
+    %calculate a kernel with a Square Root shape for simulating glare
+    window2 = round(c_glare_width / 2);
     [x, y] = meshgrid(-1:1 / window2:1,-1: 1 / window2:1);
-    H3 = (1 - chiu_glare) * (abs(sqrt(x.^2 + y.^2) - 1)).^chiu_glare_n;    
+    H3 = (1 - c_glare) * (abs(sqrt(x.^2 + y.^2) - 1)).^c_glare_n;    
     H3(window2 + 1, window2 + 1)=0;
 
-    %Circle of confusion of the kernel
+    %circle of confusion of the kernel
     distance = sqrt(x.^2 + y.^2);
     H3(distance > 1) = 0;
 
-    %Normalization of the kernel
+    %normalize the kernel
     H3 = H3 / sum(H3(:));
-    H3(window2 + 1, window2 + 1) = chiu_glare;
+    H3(window2 + 1, window2 + 1) = c_glare;
    
-    %Filtering
+    %filter
     Ld = imfilter(Ld, H3, 'replicate');
 end
 
-%Changing luminance
+%change luminance
 imgOut = ChangeLuminance(img, L, Ld);
 
 end

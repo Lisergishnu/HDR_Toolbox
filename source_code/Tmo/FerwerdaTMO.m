@@ -63,8 +63,6 @@ col = size(img,3);
 imgOut = zeros(size(img));
 
 switch col
-    case 1
-        vec = 1;
     case 3
         vec = [1.05, 0.97, 1.27];
     otherwise
