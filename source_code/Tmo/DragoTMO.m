@@ -53,12 +53,12 @@ Lwa = logMean(L);
 Lwa = Lwa / ((1.0 + d_b - 0.85)^5);
 LMax = max(L(:));
 
-L_wa = L / Lwa;
-LMax_wa = LMax / Lwa;
+L_s = L / Lwa; %scale by Lwa
+LMax_s = LMax / Lwa;
 
 c1 = log(d_b) / log(0.5);
-p1 = (d_Ld_Max / 100.0) / (log10(1 + LMax_wa));
-p2 = log(1.0 + L_wa) ./ log(2.0 + 8.0 * ((L_wa / LMax_wa).^c1));
+p1 = (d_Ld_Max / 100.0) / (log10(1 + LMax_s));
+p2 = log(1.0 + L_s) ./ log(2.0 + 8.0 * ((L_s / LMax_s).^c1));
 Ld = p1 * p2;
 
 %Changing luminance

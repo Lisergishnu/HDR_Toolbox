@@ -53,12 +53,12 @@ if(~exist('Lwa', 'var'))
     disp('Note: setting Lwa to default it may create dark images.');
 end
 
-%Contrast reduction
+%compute the scaling factors
 mR = TpFerwerda(Lda) / TpFerwerda(Lwa);
 mC = TsFerwerda(Lda) / TsFerwerda(Lwa);
-k  = ClampImg((1 - (Lwa / 2 - 0.01) / (10 - 0.01))^2, 0, 1);
+k = WalravenValeton_k(Lwa);
 
-%Removing the old luminance
+%scale the HDR image
 col = size(img,3);
 imgOut = zeros(size(img));
 
@@ -75,6 +75,7 @@ for i=1:col
     imgOut(:,:,i) = (mC * img(:,:,i) + vec(i) * mR * k * L);
 end
 
-imgOut = imgOut / LdMax;
+imgOut = ClampImg(imgOut / LdMax, 0.0, 1.0);
 
 end
+
