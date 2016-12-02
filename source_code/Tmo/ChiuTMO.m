@@ -1,6 +1,6 @@
-function imgOut = ChiuTMO(img, c_k, c_sigma, c_clamping, c_glare, c_glare_n, c_glare_width)
+function imgOut = ChiuTMO(img, c_k, c_sigma, c_clamping, glare_opt)
 %
-%       imgOut = ChiuTMO(img, c_k, c_sigma, c_clamping, c_glare, c_glare_n, c_glare_width)
+%       imgOut = ChiuTMO(img, c_k, c_sigma, c_clamping, glare_opt)
 %
 %
 %        Input:
@@ -10,11 +10,11 @@ function imgOut = ChiuTMO(img, c_k, c_sigma, c_clamping, c_glare, c_glare_n, c_g
 %           -c_clamping: number of iterations for clamping and reducing
 %                      halos. If it is negative, the clamping will not be
 %                      calculate in the final image.
-%           -c_glare: [0,1]. The default value is 0.8. If it is negative,
-%                          the glare effect will not be calculated in the
-%                          final image.
-%           -c_glare_n: appearance (1,+Inf]. Default is 8.
-%           -c_glare_width: size of the filter for calculating glare. Default is 121.
+%           -glare_opt(1): [0,1]. If it is negative, the glare effect will
+%           not be calculated in the final image. The default value is 0.8.
+%           -glare_opt(2): appearance (1,+Inf]. The default is 8.
+%           -glare_opt(3): size of the filter for calculating glare. The
+%           default is 121.
 %
 %        Output:
 %           -imgOut: tone mapped image in linear space.
@@ -56,6 +56,10 @@ if(~exist('c_k', 'var'))
     c_k = 8;
 end
 
+if(c_k <= 0)
+    c_k = 8;
+end
+
 if(~exist('c_sigma', 'var'))
     c_sigma = round(16 * max([r, c]) / 1024) + 1;
 end
@@ -64,27 +68,16 @@ if(~exist('c_clamping', 'var'))
     c_clamping = 500;
 end
 
-if(~exist('c_glare', 'var'))
-    c_glare = 0.8;
-end
-
-if(~exist('c_glare_n', 'var'))
-    c_glare_n = 8;    
-end
-
-if(~exist('c_glare_width', 'var'))
-    c_glare_width = 121;
-end
-
-%cheking parameters
-if(c_k <= 0)
-    c_k = 8;
-end
-
 if(c_sigma <= 0)
     c_sigma = round(16 * max([r, c]) / 1024) + 1;
 end
-    
+
+if(~exist('glare_opt', 'var'))
+    glare_opt(1) = 0.8;
+    glare_opt(2) = 8;    
+    glare_opt(3) = 121;
+end
+
 %calculate S
 blurred = RemoveSpecials(1 ./ (c_k * GaussianFilter(L, c_sigma)));
 
@@ -107,24 +100,7 @@ end
 %dynamic range reduction
 Ld = L .* blurred;
 
-if(c_glare > 0)
-    %calculate a kernel with a Square Root shape for simulating glare
-    window2 = round(c_glare_width / 2);
-    [x, y] = meshgrid(-1:1 / window2:1,-1: 1 / window2:1);
-    H3 = (1 - c_glare) * (abs(sqrt(x.^2 + y.^2) - 1)).^c_glare_n;    
-    H3(window2 + 1, window2 + 1)=0;
-
-    %circle of confusion of the kernel
-    distance = sqrt(x.^2 + y.^2);
-    H3(distance > 1) = 0;
-
-    %normalize the kernel
-    H3 = H3 / sum(H3(:));
-    H3(window2 + 1, window2 + 1) = c_glare;
-   
-    %filter
-    Ld = imfilter(Ld, H3, 'replicate');
-end
+Ld = ChiuGlare(Ld, glare_opt);
 
 %change luminance
 imgOut = ChangeLuminance(img, L, Ld);
