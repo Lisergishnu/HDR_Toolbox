@@ -79,7 +79,6 @@ L = lum(img);
 L2 = WardDownsampling(L);
 LMax = max(L2(:));
 LMin = min(L2(:));
-
 if(LMin <= 0.0)
      LMin = min(L2(L2 > 0.0));
 end
@@ -88,7 +87,6 @@ end
 Llog  = log(L2);
 LlMax = log(LMax);
 LlMin = log(LMin);
-
 LldMax = log(LdMax);
 LldMin = log(LdMin);
 

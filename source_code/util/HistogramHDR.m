@@ -97,7 +97,7 @@ total = 0;
 
 for i=1:nBins
     indx  = find(L >= (dMM * (i - 1) + Lmin) & L < (dMM * i + Lmin));
-    count = length(indx);
+    count = numel(indx);
     
     if(count > 0)
         histo(i) = count;
