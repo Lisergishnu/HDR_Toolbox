@@ -3,6 +3,7 @@ function H = histogram_ceiling(H, k)
 %
 %        H = histogram_ceiling(H, k)
 %
+%       This function trims an histogram
 %
 %        Input:
 %           -H: input histogram

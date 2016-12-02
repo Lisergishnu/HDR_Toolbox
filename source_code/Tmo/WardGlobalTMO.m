@@ -31,7 +31,7 @@ function imgOut = WardGlobalTMO(img, Ld_max)
 %     in Graphics Gems IV
 %
 
-%Is it a three color channels image?
+%is it a gray/three color channels image?
 check13Color(img);
 
 checkNegative(img);
@@ -40,11 +40,11 @@ if(~exist('Ld_max', 'var'))
     Ld_max = 100;
 end
 
-if(Ld_max < 0)
+if(Ld_max <= 0.0)
     Ld_max = 100;
 end
 
-%Luminance channel
+%compute luminance channel
 L = lum(img);
 
 Lwa = logMean(L); %compute geometry mean
