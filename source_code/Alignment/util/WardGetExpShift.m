@@ -57,8 +57,8 @@ while(shift_bits > 0)
             xs = cur_shift(1) + i;
             ys = cur_shift(2) + j;
 
-            shifted_tb2 = logical(imshift(tb2, [xs, ys]));
-            shifted_eb2 = logical(imshift(eb2, [xs, ys]));
+            shifted_tb2 = logical(imShift(tb2, [xs, ys]));
+            shifted_eb2 = logical(imShift(eb2, [xs, ys]));
 
             diff_b = bitxor(tb1, shifted_tb2);
             diff_b = diff_b & eb1;
