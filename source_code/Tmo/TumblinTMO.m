@@ -1,6 +1,6 @@
-function imgOut = TumblinTMO(img, L_da, Ld_Max, C_Max)
+function imgOut = TumblinTMO(img, L_da, Ld_Max, C_Max, L_wa)
 %
-%        imgOut = TumblinTMO(img, L_da, Ld_Max, C_Max)
+%        imgOut = TumblinTMO(img, L_da, Ld_Max, C_Max, L_wa)
 %
 %
 %        Input:
@@ -34,6 +34,8 @@ function imgOut = TumblinTMO(img, L_da, Ld_Max, C_Max)
 %is it a three color channels image?
 check13Color(img);
 
+checkNegative(img);
+
 %check parameters
 if(~exist('L_da', 'var'))
     L_da = 20;
@@ -47,17 +49,19 @@ if(~exist('C_Max', 'var'))
     C_Max = 100;
 end
 
+if(~exist('L_wa', 'var'))
+    L_wa = logMean(lum(img)); %luminance world adaptation 
+end
+
 %compute luminance channel
 L = lum(img);
-
-L_wa = logMean(L); %luminance world adaptation 
 
 %range compression
 gamma_w = StevensCSF(L_wa);
 gamma_d = StevensCSF(L_da);
 gamma_wd = gamma_w / (1.855 + 0.4 * log(L_da));
 m = C_Max.^((gamma_wd - 1) / 2.0);
-Ld = L_da * m .* ((L / L_wa).^(gamma_w / gamma_d));
+Ld = L_da * m .* ((L ./ L_wa).^(gamma_w / gamma_d));
 Ld = Ld / Ld_Max;
 
 %change luminance

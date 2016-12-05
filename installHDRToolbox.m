@@ -91,7 +91,7 @@ try
     cd([str_cur, '/source_code/IO/']);
     mex('read_exr.cpp');
     mex('write_exr.cpp');
-catch err
+catch err    
     disp('read_exr.cpp and write_exr.cpp were not compiled');
 end
 

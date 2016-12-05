@@ -1,17 +1,17 @@
-function imgLabel=CompoCon(img,type)
+function imgLabel = CompoCon(img,type)
 %
 %
-%       imgLabel=CompoCon(img,type)
+%       imgLabel = CompoCon(img,type)
 %
 %
 %        Input:
 %           -img: an integer grayscale image
-%           -type: 4, 8 the connetion type
+%           -type: 4, 8: the connetion type
 %
 %        Output:
-%           -imgLabel: labelled image
+%           -imgLabel: labeled image
 %
-%     Copyright (C) 2011  Francesco Banterle
+%     Copyright (C) 2011-2016  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -27,22 +27,20 @@ function imgLabel=CompoCon(img,type)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-[r,c]=size(img);
-imgLabel=zeros(r,c);
+imgLabel = zeros(size(img));
 
 lstVal = unique(img);
 n = length(lstVal);
 totLabels = 0;
 for i=1:n
-    indx=find(img==lstVal(i));   
-    if(~isempty(indx))
-        %binary image
-        imgTmp=zeros(r,c);
-        imgTmp(indx)=1;
-        imgTmp2=bwlabel(logical(imgTmp),type);
+    indx = find(img == lstVal(i));   
+    if(~isempty(indx)) %binary image
+        imgTmp = zeros(size(img));
+        imgTmp(indx) = 1;
+        imgTmp2 = bwlabel(logical(imgTmp), type);
         
-        imgLabel= imgLabel+(imgTmp2+totLabels);
-        totLabels = totLabels+max(max(imgTmp2))+1;
+        imgLabel= imgLabel + (imgTmp2 + totLabels);
+        totLabels = totLabels+max(imgTmp2(:)) + 1;
     end    
 end
 end

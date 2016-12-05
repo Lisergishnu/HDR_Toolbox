@@ -38,48 +38,43 @@ check13Color(img);
 
 checkNegative(img);
 
-%Luminance channel
-L = lum(img);
-
 if(~exist('pAlpha', 'var'))
-    pAlpha = ReinhardAlpha(L);
+    pAlpha = ReinhardAlpha(lum(img));
 end
 
 if(~exist('pWhite', 'var'))
-    pWhite = ReinhardWhitePoint(L);
+    pWhite = ReinhardWhitePoint(lum(img));
 end
 
-pWhite2 = pWhite * pWhite;
+%luminance channel
+L = lum(img);
 
-%Number of zones in the image
-maxL = max(L(:));
-minL = min(L(:));
+%number of zones in img
 epsilon = 1e-6;
-minLLog = log2(minL + epsilon);
-maxLLog = log2(maxL + epsilon);
-Z = ceil (maxLLog - minLLog);
+minLLog = log2(min(L(:)) + epsilon);
+maxLLog = log2(max(L(:)));
+Z = ceil(maxLLog - minLLog);
 
-%Choose the representative Rz for each zone
+%choose the representative Rz for each zone
 fstopMap = zeros(size(L));
 Lav = logMean(L);
-for i=0:Z
-    indx = find(L >= 2^(i - 1 + minLLog) & L<2^(minLLog + i));
-    if(~isempty(indx))
+for i=1:Z
+    lower_i = 2^(i - 1 + minLLog);
+    upper_i = 2^(i + minLLog);
+    indx = find(L >= lower_i & L < upper_i);
+    if(~isempty(indx)) %apply global ReinhardTMO
         Rz = MaxQuart(L(indx), 0.5);
-        %photographic operator
-        Rz2 = (pAlpha * Rz) / Lav;        
-        f = (Rz2 * (1 + Rz2 / pWhite2)) / ( 1 + Rz2);%f = Rz2/(Rz2+1);   
-        
+        Rz_s = (pAlpha * Rz) / Lav; %scale Rz        
+        f = (Rz_s * (1 + Rz_s / (pWhite^2))) / (Rz_s + 1);           
         fstopMap(indx) = log2(f / Rz);
     end
 end
 
-%Minimization process
+%edge-aware filtering
 fstopMap = 2.^LischinskiMinimization(log2(L + epsilon), fstopMap, 0.07 * ones(size(L)));
-imgOut = zeros(size(img));
-col = size(img,3);
 
-for i=1:col
+imgOut = zeros(size(img));
+for i=1:size(img,3)
     imgOut(:,:,i) = img(:,:,i) .* fstopMap;
 end
 
