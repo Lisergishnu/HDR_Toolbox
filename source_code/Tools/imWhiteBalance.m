@@ -1,17 +1,18 @@
-function k = WalravenValeton_k(Lwa, wv_sigma)
+function imgOut = imWhiteBalance(img)
 %
-%       k = WalravenValeton_k(Lwa, wv_sigma)
+%     imgOut = imWhiteBalance(img)
+%
+%     This functions crops an HDR image.
+%
+%     Input:
+%       -img: an input image
+%
+%     Output:
+%       -imgOut: an image
 %
 %
-%        Input:
-%           -Lwa: world adaptation luminance in cd/m^2
-%           -wv_sigma: 
-%
-%        Output:
-%           -k: k value
-% 
 %     Copyright (C) 2016 Francesco Banterle
-%  
+% 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
 %     the Free Software Foundation, either version 3 of the License, or
@@ -25,18 +26,24 @@ function k = WalravenValeton_k(Lwa, wv_sigma)
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
-%     The paper describing this technique is:
-%     "A Model of Visual Adaptation for Realistic Image Synthesis"
-% 	  by James A. Ferwerda, Sumanta N. Pattanaik, Peter Shirley, Donald P. Greenberg
-%     in Proceedings of SIGGRAPH 1996
-%
 
-if(~exist('wv_sigma', 'var'))
-    wv_sigma = 100;
+
+button = 0;
+while(button ~= 3)
+    img_tmo = ReinhardTMO(img);
+    GammaTMO(img_tmo, 2.2, 0.0, 1);
+    [x,y,button] = ginput(1);
+    
+    if(button ~= 3)
+        window = img((y - 16):(y + 16), (x - 16):(x + 16), :);
+        color = mean(mean(window));
+
+        for i=1:size(img, 3)
+            img(:,:,i) = img(:,:,i) / color(i);
+        end
+    end
 end
 
-k = (wv_sigma - Lwa / 4) ./ (wv_sigma + Lwa);
-
-k(k < 0.0) = 0.0;
+imgOut = img;
 
 end

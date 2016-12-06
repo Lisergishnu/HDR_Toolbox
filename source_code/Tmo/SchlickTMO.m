@@ -1,14 +1,16 @@
-function imgOut = SchlickTMO(img, s_mode, s_p, s_bit, s_dL0, s_k)
+function imgOut = SchlickTMO(img, s_mode, p, nBit, L0, k)
 %
-%       imgOut = SchlickTMO(img, s_mode, s_p, s_bit,s_dL0)
+%       imgOut = SchlickTMO(img, s_mode, p, nBit, L0, k)
 %
 %
 %       Input:
 %           -img: input HDR image.
-%           -s_p: model parameter which takes values in [1,+inf].
-%           -s_bit: number of bit for the quantization step.
-%           -s_dL0: 
-%           -s_k: in [0,1].
+%           -s_mode: mode
+%           -p: model parameter which takes values in [1,+inf].
+%           -nBit: number of bit for the quantization step.
+%           -L0: lowest value of the LDR monitor that can be perceived
+%           by the HVS.
+%           -k: a value in [0,1].
 %           -Mode = { 'standard', 'calib', 'nonuniform' }
 %
 %       Output
@@ -40,48 +42,44 @@ check13Color(img);
 check3Color(img);
 
 if(~exist('s_mode', 'var'))
-    s_mode = 'nonuniform';
+    s_mode = 'automatic';
 end
 
-if(~exist('s_bit', 'var'))
-    s_bit = 8;
+if(~exist('nBit', 'var'))
+    nBit = 8;
 end
 
-if(~exist('s_dL0',  'var'))
-    s_dL0 = 1;
+if(~exist('L0',  'var'))
+    L0 = 1;
 end
 
-if(~exist('s_k','var'))
-    s_k = 0.5;
+if(~exist('k','var'))
+    k = 0.5;
 end
 
-if(~exist('s_p', 'var'))
-    s_p = 1 / 0.005;
+if(~exist('p', 'var'))
+    p = 1 / 0.005;
 end
 
 %Luminance channel
 L = lum(img);
 
 %compute max luminance
-LMax = max(L(:));
-
+LMax = MaxQuart(L, 0.99);
 %comput min luminance
-LMin = min(L(:));
-if(LMin <= 0.0)
-     LMin = min(L(L > 0.0));
-end
+LMin = MaxQuart(L(L > 0.0), 0.01);
 
 %mode selection
 switch s_mode
-    case 'standard'
-        p = max([s_p, 1]);        
+    case 'manual'
+        p = max([p, 1]);        
         
-    case 'calib'
-        p = s_dL0 * LMax / (2^s_bit * LMin);
+    case 'automatic'
+        p = L0 * LMax / (2^nBit * LMin);
         
     case 'nonuniform'
-        p = s_dL0 * LMax / (2^s_bit * LMin);
-        p = p * (1 - s_k + s_k * L / sqrt(LMax * LMin));
+        p = L0 * LMax / (2^nBit * LMin);     
+        p = p * (1 - k + k * L / sqrt(LMax * LMin));
 end
 
 %dynamic range reduction

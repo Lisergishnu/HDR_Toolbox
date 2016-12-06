@@ -30,7 +30,7 @@ function k = Ferwerda_k(Lwa)
 %     in Proceedings of SIGGRAPH 1996
 %
 
-k = (1 - (Lwa / 2 - 0.01) / (10 - 0.01))^2;
+k = (1 - (Lwa / 2 - 0.01) / (10 - 0.01)).^2;
 
 k = ClampImg(k, 0.0, 1.0);
 

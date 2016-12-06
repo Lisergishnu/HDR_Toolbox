@@ -1,6 +1,6 @@
-function [imgOut, imgGlare, PSF] = RemovingGlare( img )
+function [imgOut, imgGlare, PSF] = RemoveGlare( img )
 %
-%       [imgOut, imgGlare, PSF] = RemovingGlare( img )
+%       [imgOut, imgGlare, PSF] = RemoveGlare( img )
 %
 %       This function estimates the PSF of a camera from a single HDR image
 %       and it removes veiling glare
