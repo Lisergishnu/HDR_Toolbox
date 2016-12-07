@@ -1,6 +1,6 @@
-function [imgOut, rect] = imCropHDR(img)
+function [imgOut, rect] = hdrimCrop(img)
 %
-%     [imgOut, rect] = imCropHDR(img)
+%     [imgOut, rect] = hdrimCrop(img)
 %
 %     This functions crops an HDR image.
 %

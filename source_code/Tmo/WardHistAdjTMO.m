@@ -6,8 +6,8 @@ function imgOut = WardHistAdjTMO(img, nBin, LdMin, LdMax, bPlotHistogram)
 %        Input:
 %           -img: input HDR image
 %           -nBin: number of bins for calculating the histogram (1,+Inf)
-%           -LdMin: minimum luminance value of the display
-%           -LdMax: maximum luminance value of the display
+%           -LdMin: minimum luminance value of the dispLay
+%           -LdMax: maximum luminance value of the dispLay
 %           -bPlotHistogram:
 %
 %        Output:
@@ -40,7 +40,11 @@ check13Color(img);
 checkNegative(img);
 
 if(~exist('nBin', 'var'))
-    nBin = 256;
+    nBin = 100;
+end
+
+if(nBin < 1)
+    nBin = 100;
 end
 
 if(~exist('LdMin', 'var'))
@@ -69,59 +73,55 @@ if(~exist('bPlotHistogram', 'var'))
     bPlotHistogram = 0;
 end
 
-if(nBin <= 1)
-    nBin = 256;
-end
-
 %compute luminance channel
 L = lum(img);
 
+%downsample according to fovea...
 L2 = WardDownsampling(L);
+%compute stastistics
 LMax = max(L2(:));
 LMin = min(L2(:));
-if(LMin <= 0.0)
-     LMin = min(L2(L2 > 0.0));
-end
-
-%Log space
 Llog  = log(L2);
 LlMax = log(LMax);
 LlMin = log(LMin);
 LldMax = log(LdMax);
 LldMin = log(LdMin);
 
-%compute function p
-p = zeros(nBin, 1);
+%compute the histogram H 
+H = zeros(nBin, 1);
 delta = (LlMax - LlMin) / nBin;
 
 for i=1:nBin
     indx = find(Llog > (delta * (i - 1) + LlMin) & Llog <= (delta * i + LlMin));
-    p(i) = numel(indx);
+    H(i) = numel(indx);
 end
 
-%apply histogram ceiling
+%apply the histogram ceiling
+maxH = max(H);
+x_vis = LlMin:((LlMax - LlMin) / (nBin -1)):LlMax;
 if(bPlotHistogram)
-    bar(p);
+    bar(x_vis, H/maxH);
     hold on;
 end
 
-p = histogram_ceiling(p, delta / (LldMax - LldMin));
+H = histogram_ceiling(H, delta / (LldMax - LldMin));
 
 if(bPlotHistogram)
-    bar(p);
+    bar(x_vis, H/maxH);
     hold off;
 end
 
 %compute P(x) 
-Pcum = cumsum(p);
-Pcum = Pcum / max(Pcum);
+P = cumsum(H);
+P = P / max(P);
 
 %calculate tone mapped luminance
 L(L > LMax) = LMax;
 x = (LlMin:((LlMax - LlMin) / (nBin - 1)):LlMax)';
-PcumL = interp1(x , Pcum , real(log(L)), 'linear');
-Ld  = exp(LldMin + (LldMax - LldMin) * PcumL);
-Ld  = (Ld - LdMin) / (LdMax - LdMin); %normalize in [0,1]
+P_L = interp1(x , P , real(log(L)), 'linear');
+Ld  = exp(LldMin + (LldMax - LldMin) * P_L);
+%normalize in [0,1]
+Ld  = (Ld - LdMin) / (LdMax - LdMin); 
 
 %change luminance
 imgOut = ChangeLuminance(img, L, Ld);

@@ -28,7 +28,7 @@ function [ B_cone, B_rod ] = BleachingParameters( A_cone, A_rod )
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-B_cone = 2*1e6/(2*1e6 + A_cone);
-B_rod = 0.04/(0.04 + A_rod);
+B_cone = 2 * 1e6 / (2*1e6 + A_cone);
+B_rod = 0.04 / (0.04 + A_rod);
 
 end

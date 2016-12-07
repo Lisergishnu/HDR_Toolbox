@@ -1,15 +1,13 @@
-function imgOut = PattanaikVisualAdaptationStaticTMO(img, A_rod, A_cone)
+function imgOut = PattanaikTMO(img, G_rod, G_cone)
 %
-%         imgOut = PattanaikVisualAdaptationStaticTMO(img, A_rod, A_cone)
+%         imgOut = PattanaikTMO(img, G_rod, G_cone)
 %
-%        This function applies exposure (in f-stops) and inverse gamma
-%        correction to an image. The function can visualize images if
-%        TMO_view is set to true (1).
+%
 %
 %        Input:
 %           -img: an HDR image with calibrated values in cd/m^2
-%           -A_rod: adaptation value for rods in cd/m^2
-%           -A_cone: adaptation value for cones in cd/m^2
+%           -G_rod: adaptation goal value for rods in cd/m^2
+%           -G_cone: adaptation goal value for cones in cd/m^2
 %
 %        Output:
 %           -imgOut: a tone mapped image
@@ -44,14 +42,24 @@ function imgOut = PattanaikVisualAdaptationStaticTMO(img, A_rod, A_cone)
 
 checkNegative(img);
 
-if(~exist('A_rod', 'var'))
-    A_rod = 80; %cd/m^2
+if(~exist('G_rod', 'var'))
+    G_rod = 80; %cd/m^2
     disp('Assuming adaptation for an office condition');
 end
 
-if(~exist('A_cone', 'var'))
-    A_cone = 80; %cd/m^2
+if(~exist('G_cone', 'var'))
+    G_cone = 80; %cd/m^2
     disp('Assuming adaptation for an office condition');
+end
+
+if(~exist('adaptation_time', 'var'))
+    adaptation_time = -1;
+end
+
+if(adaptation_time < 0.0)
+    bAdapt = 0;
+else
+    bAdapt = 1;
 end
 
 %for gray scale images
@@ -76,9 +84,14 @@ L_rod  = lumScotopic(imgXYZ);
 
 %computing cones and rods responses
 sr_n = 0.73;
-[ sigma_cone, sigma_rod ] = SaturationParameters(A_cone, A_rod );
-[ B_cone, B_rod ] = BleachingParameters( A_cone, A_rod );
+    
+%static
+[ B_cone, B_rod ] = BleachingParameters( G_cone, G_rod );
+A_cone = G_cone;
+A_rod = G_rod;
 
+%apply sigmoids
+[ sigma_cone, sigma_rod ] = SaturationParameters(A_cone, A_rod );
 R_cone = SigmoidResponse(L_cone, sr_n, sigma_cone, B_cone);
 R_rod = SigmoidResponse(L_rod, sr_n, sigma_rod, B_rod);
 
@@ -89,6 +102,7 @@ img_chroma = zeros(size(img));
 for i=1:size(img, 3)
     img_chroma(:,:,i) = (img(:,:,i) ./ L_cone).^S;
 end
+
 img_chroma = RemoveSpecials(img_chroma);
 
 R_lum = R_cone + R_rod;
