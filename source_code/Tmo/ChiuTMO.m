@@ -8,7 +8,7 @@ function imgOut = ChiuTMO(img, c_k, c_sigma, c_clamping, glare_opt)
 %           -c_k: scale correction
 %           -c_sigma: local window size
 %           -c_clamping: number of iterations for clamping and reducing
-%                      halos. If it is negative, the clamping will not be
+%                      halos. If it is negative, the clamping wL_invl not be
 %                      calculate in the final image.
 %           -glare_opt(1): [0,1]. If it is negative, the glare effect will
 %           not be calculated in the final image. The default value is 0.8.
@@ -78,29 +78,26 @@ if(~exist('glare_opt', 'var'))
     glare_opt(3) = 121;
 end
 
-%calculate S
-blurred = RemoveSpecials(1 ./ (c_k * GaussianFilter(L, c_sigma)));
+%calculate s
+s = RemoveSpecials(1 ./ (c_k * GaussianFilter(L, c_sigma)));
 
-%clamp S
-if(c_clamping > 0)
-    iL = RemoveSpecials(1./L);
-    indx = find(blurred >= iL);
-    blurred(indx) = iL(indx);
+if(c_clamping > 0) %clamp s
+    L_inv = RemoveSpecials(1 ./ L);
+    indx = find(s >= L_inv);
+    s(indx) = L_inv(indx);
 
-    %Smoothing S
-    H2 = [0.080 0.113 0.080;...
-          0.113 0.227 0.113;...
-          0.080 0.113 0.080];
+    %smoothing s
+    H = [0.080 0.113 0.080;...
+         0.113 0.227 0.113;...
+         0.080 0.113 0.080];
 
     for i=1:c_clamping
-        blurred = imfilter(blurred, H2, 'replicate');
+        s = imfilter(s, H, 'replicate');
     end
 end
 
-%dynamic range reduction
-Ld = L .* blurred;
-
-Ld = ChiuGlare(Ld, glare_opt);
+%tone map the luminance
+Ld = ChiuGlare(L .* blurred, glare_opt);
 
 %change luminance
 imgOut = ChangeLuminance(img, L, Ld);

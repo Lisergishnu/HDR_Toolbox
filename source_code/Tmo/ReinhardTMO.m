@@ -100,7 +100,6 @@ end
 
 %range compression
 Ld = (Lscaled .* (1 + Lscaled / pWhite^2)) ./ (1 + L_adapt);
-%Ld = Lscaled ./ (1.0 + L_adapt);
 
 %change luminance
 imgOut = ChangeLuminance(img, L, Ld);
