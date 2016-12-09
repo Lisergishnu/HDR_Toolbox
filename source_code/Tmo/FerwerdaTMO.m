@@ -1,13 +1,13 @@
-function imgOut = FerwerdaTMO(img, LdMax, Lda, Lwa)
+function imgOut = FerwerdaTMO(img, Ld_Max, L_da, L_wa)
 %
-%       imgOut = FerwerdaTMO(img, LdMax, Lda, Lwa)
+%       imgOut = FerwerdaTMO(img, Ld_Max, L_da, L_wa)
 %
 %
 %        Input:
 %           -img: input HDR image
-%           -LdMax: maximum luminance of the display in cd/m^2
-%           -Lda: adaptation luminance in cd/m^2
-%           -Lwa: world adaptation luminance in cd/m^2
+%           -Ld_Max: maximum luminance of the display in cd/m^2
+%           -L_da: adaptation luminance in cd/m^2
+%           -L_wa: world adaptation luminance in cd/m^2
 %
 %        Output:
 %           -imgOut: tone mapped image with values in [0,1]
@@ -37,34 +37,32 @@ check13Color(img);
 
 checkNegative(img);
 
-if(~exist('LdMax', 'var'))
-    LdMax = 100; %assuming 100 cd/m^2 output display
+if(~exist('Ld_Max', 'var'))
+    Ld_Max = 100; %assuming 100 cd/m^2 output display
 end
 
-if(~exist('Lda', 'var'))
-    Lda = LdMax / 2; %as in the original paper
+if(~exist('L_da', 'var'))
+    L_da = Ld_Max / 2; %as in the original paper
 end
 
-%Luminance channel
+if(~exist('L_wa', 'var'))
+    L_wa = max(max(lum(img))) / 2; %as in the original paper
+    disp('Note: setting L_wa to default it may create dark images.');
+end
+
+%compute Luminance
 L = lum(img);
 
-if(~exist('Lwa', 'var'))
-    Lwa = MaxQuart(L, 0.999) / 2; %as in the original paper
-    disp('Note: setting Lwa to default it may create dark images.');
-end
+%compute the scaling factors
+mC = TpFerwerda(L_da) / TpFerwerda(L_wa);%cones
+mR = TsFerwerda(L_da) / TsFerwerda(L_wa);%rods
+k = WalravenValeton_k(L_wa);
 
-%Contrast reduction
-mR = TpFerwerda(Lda) / TpFerwerda(Lwa);
-mC = TsFerwerda(Lda) / TsFerwerda(Lwa);
-k  = ClampImg((1 - (Lwa / 2 - 0.01) / (10 - 0.01))^2, 0, 1);
-
-%Removing the old luminance
+%scale the HDR image
 col = size(img,3);
 imgOut = zeros(size(img));
 
 switch col
-    case 1
-        vec = 1;
     case 3
         vec = [1.05, 0.97, 1.27];
     otherwise
@@ -75,6 +73,7 @@ for i=1:col
     imgOut(:,:,i) = (mC * img(:,:,i) + vec(i) * mR * k * L);
 end
 
-imgOut = imgOut / LdMax;
+imgOut = ClampImg(imgOut / Ld_Max, 0.0, 1.0);
 
 end
+

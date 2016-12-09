@@ -3,6 +3,7 @@ function [result,A] = LischinskiMinimization(L, g, W, LM_alpha, LM_lambda)
 %
 %      imgOut = LischinskiMinimization(L, g, W, LM_alpha, LM_lambda)
 %
+%       
 %
 %       Input:
 %           -L: log luminance
@@ -15,7 +16,7 @@ function [result,A] = LischinskiMinimization(L, g, W, LM_alpha, LM_lambda)
 %       Output:
 %           -result: output of the minimization
 % 
-%     Copyright (C) 2010 Francesco Banterle
+%     Copyright (C) 2010-2016 Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -31,7 +32,7 @@ function [result,A] = LischinskiMinimization(L, g, W, LM_alpha, LM_lambda)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-%Parameters Initialization
+%init
 if(~exist('W', 'var'))
     W = ones(size(L));
 end
@@ -50,12 +51,11 @@ e = 1e-4;
 [r,c] = size(L);
 n = r * c;
 
-%Generation of the b vector
+%build b vector
 g = g .* W;
 b = reshape(g, r * c, 1);
 
-%Generation of the A matrix
-%Gradients computations
+%compute gradients
 dy = diff(L, 1, 1);
 dy = -LM_lambda ./ (abs(dy).^LM_alpha + e);
 dy = padarray(dy, [1 0], 'post');
@@ -66,7 +66,7 @@ dx = -LM_lambda ./ (abs(dx).^LM_alpha + e);
 dx = padarray(dx, [0 1], 'post');
 dx = dx(:);
 
-%Building A
+%build A
 A = spdiags([dx, dy], [-r,-1], n, n);
 A = A + A'; %symmetric conditions
 
@@ -75,13 +75,13 @@ g01 = padarray(dy, 1, 'pre'); g01 = g01(1:end-1);
 D = reshape(W, r * c,1) - (g00 + dx + g01 + dy);
 A = A + spdiags(D, 0, n, n);
 
-%Solving the system
+%solve A\b
 if(~isa(b, 'double')) %force in case no double values are not used
     b = double(b);
 end
 
 result = A \ b;
 
-%Reshaping the result
+%reshape the output
 result = reshape(result,r,c);
 end

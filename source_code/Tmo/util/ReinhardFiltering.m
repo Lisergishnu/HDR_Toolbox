@@ -41,7 +41,7 @@ if(~exist('pEpsilon', 'var'))
     pEpsilon = 0.05;%as in the original paper
 end
 
-%precomputation of 9 filtered images
+%precompute 9 filtered images
 sMax = 8; 
 [r, c] = size(L);
 V_vec = zeros(r, c, sMax);

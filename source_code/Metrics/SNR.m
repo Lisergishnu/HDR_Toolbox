@@ -27,25 +27,7 @@ function val = SNR(imgReference, imgDistorted)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-if(isSameImage(imgReference, imgDistorted) == 0)
-    error('The two images are different they can not be used.');
-end
-
-if(isa(imgReference, 'uint8'))
-    imgReference = double(imgReference) / 255.0;
-end
-
-if(isa(imgDistorted, 'uint8'))
-    imgDistorted = double(imgDistorted) / 255.0;
-end
-
-if(isa(imgReference, 'uint16'))
-    imgReference = double(imgReference) / 65535.0;
-end
-
-if(isa(imgDistorted, 'uint16'))
-    imgDistorted = double(imgDistorted) / 65535.0;
-end
+[imgReference, imgDistorted] = checkDomains(imgReference, imgDistorted);
 
 imgNoise2 = (imgReference - imgDistorted).^2;
 imgReference2 = imgReference.^2;
@@ -54,7 +36,8 @@ tmp1 = mean(imgReference2(:));
 tmp2 = mean(imgNoise2(:));
 
 if(tmp2 > 0.0)
-    val = 10 * log10(tmp1 / tmp2);
+    val = 10 * 
+    (tmp1 / tmp2);
 else
     disp('the images are the same');
     val = 1000.0;

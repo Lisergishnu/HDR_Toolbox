@@ -71,7 +71,7 @@ fprintf(fid,'-Y %d +X %d\n', n, m);
 %convert from float to RGBE
 RGBEbuffer = uint8(float2RGBE(img));
 
-if((n<8) || (n>32767)) %RLE encoding is not allowed in these cases
+if((n < 8) || (n > 32767)) %RLE encoding is not allowed in these cases
     bRLE = 0;
 end
 

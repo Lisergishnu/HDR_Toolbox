@@ -1,7 +1,7 @@
-function val = MaximumError(imgReference, imgDistorted)
+function maxErr = MaximumError(imgReference, imgDistorted)
 %
 %
-%      val = MaximumError(imgReference, imgDistorted)
+%      maxErr = MaximumError(imgReference, imgDistorted)
 %
 %       the maximum error between two images
 %
@@ -28,12 +28,10 @@ function val = MaximumError(imgReference, imgDistorted)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-if(isSameImage(imgReference, imgDistorted) == 0)
-    error('The two images are different they can not be used.');
-end
+[imgReference, imgDistorted, ~] = checkDomains(imgReference, imgDistorted);
 
 delta = abs(imgReference - imgDistorted);
 
-val = max(delta(:));
+maxErr = max(delta(:));
 
 end

@@ -1,18 +1,17 @@
-function imgLabel = CompoCon(img,type)
+function k = WalravenValeton_k(Lwa, wv_sigma)
 %
-%
-%       imgLabel = CompoCon(img,type)
+%       k = WalravenValeton_k(Lwa, wv_sigma)
 %
 %
 %        Input:
-%           -img: an integer grayscale image
-%           -type: 4, 8: the connetion type
+%           -Lwa: world adaptation luminance in cd/m^2
+%           -wv_sigma: 
 %
 %        Output:
-%           -imgLabel: labeled image
-%
-%     Copyright (C) 2011-2016  Francesco Banterle
+%           -k: k value
 % 
+%     Copyright (C) 2016 Francesco Banterle
+%  
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
 %     the Free Software Foundation, either version 3 of the License, or
@@ -26,22 +25,18 @@ function imgLabel = CompoCon(img,type)
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
+%     The paper describing this technique is:
+%     "A Model of Visual Adaptation for Realistic Image Synthesis"
+% 	  by James A. Ferwerda, Sumanta N. Pattanaik, Peter Shirley, Donald P. Greenberg
+%     in Proceedings of SIGGRAPH 1996
+%
 
-imgLabel = zeros(size(img));
-
-lstVal = unique(img);
-n = length(lstVal);
-totLabels = 0;
-for i=1:n
-    indx = find(img == lstVal(i));   
-    if(~isempty(indx)) %binary image
-        imgTmp = zeros(size(img));
-        imgTmp(indx) = 1;
-        imgTmp2 = bwlabel(logical(imgTmp), type);
-        
-        imgLabel= imgLabel + (imgTmp2 + totLabels);
-        totLabels = totLabels+max(imgTmp2(:)) + 1;
-    end    
-end
+if(~exist('wv_sigma', 'var'))
+    wv_sigma = 100;
 end
 
+k = (wv_sigma - Lwa / 4) ./ (wv_sigma + Lwa);
+
+k(k < 0.0) = 0.0;
+
+end

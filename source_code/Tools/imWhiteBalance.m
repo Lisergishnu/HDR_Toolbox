@@ -1,17 +1,17 @@
-function imgLabel = CompoCon(img,type)
+function imgOut = imWhiteBalance(img)
+%
+%     imgOut = imWhiteBalance(img)
+%
+%     This functions crops an HDR image.
+%
+%     Input:
+%       -img: an input image
+%
+%     Output:
+%       -imgOut: an image
 %
 %
-%       imgLabel = CompoCon(img,type)
-%
-%
-%        Input:
-%           -img: an integer grayscale image
-%           -type: 4, 8: the connetion type
-%
-%        Output:
-%           -imgLabel: labeled image
-%
-%     Copyright (C) 2011-2016  Francesco Banterle
+%     Copyright (C) 2016 Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -27,21 +27,23 @@ function imgLabel = CompoCon(img,type)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-imgLabel = zeros(size(img));
 
-lstVal = unique(img);
-n = length(lstVal);
-totLabels = 0;
-for i=1:n
-    indx = find(img == lstVal(i));   
-    if(~isempty(indx)) %binary image
-        imgTmp = zeros(size(img));
-        imgTmp(indx) = 1;
-        imgTmp2 = bwlabel(logical(imgTmp), type);
-        
-        imgLabel= imgLabel + (imgTmp2 + totLabels);
-        totLabels = totLabels+max(imgTmp2(:)) + 1;
-    end    
-end
+button = 0;
+while(button ~= 3)
+    img_tmo = ReinhardTMO(img);
+    GammaTMO(img_tmo, 2.2, 0.0, 1);
+    [x,y,button] = ginput(1);
+    
+    if(button ~= 3)
+        window = img((y - 16):(y + 16), (x - 16):(x + 16), :);
+        color = mean(mean(window));
+
+        for i=1:size(img, 3)
+            img(:,:,i) = img(:,:,i) / color(i);
+        end
+    end
 end
 
+imgOut = img;
+
+end

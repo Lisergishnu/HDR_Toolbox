@@ -46,7 +46,7 @@ end
 alignment_info = zeros(3, 2);
 
 shift_ret = WardGetExpShift(img1, img2, ward_percentile);
-imgOut = imshift(img2, shift_ret);
+imgOut = imShift(img2, shift_ret);
 
 alignment_info(1, :) = shift_ret;
         
@@ -60,7 +60,7 @@ if(bRotation)
 
         %final shift
         shift_ret = WardGetExpShift(img1, imgOut);
-        imgOut = imshift(imgOut, shift_ret); 
+        imgOut = imShift(imgOut, shift_ret);
         
         alignment_info(3, :) = shift_ret;    
     end

@@ -55,8 +55,8 @@ weight_s = weight_s / sum(weight_s(:));
 
 %computing the bilateral filter
 for i=1:nSamples    
-    imgFetch = imshift(img, [X(i), Y(i)]);
-    imgFetch_Edge = imshift(imgEdges, [X(i), Y(i)]);
+    imgFetch = imShift(img, [X(i), Y(i)]);
+    imgFetch_Edge = imShift(imgEdges, [X(i), Y(i)]);
 
     if(col > 1)
         tmp = sum((imgFetch_Edge - imgEdges).^2, col);

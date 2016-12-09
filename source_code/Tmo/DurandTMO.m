@@ -41,32 +41,22 @@ if(~exist('target_contrast', 'var'))
     target_contrast = 5; %as in the original paper
 end
 
-%Luminance channel
+%compute luminance channel
 L = lum(img);
 
-col = size(img, 3);
-
-%Chroma
-for i=1:col
-    img(:,:,i) = RemoveSpecials(img(:,:,i) ./ L);
-end
-
-%Fine details and base separation
+%separate detail and base
 [Lbase, Ldetail] = BilateralSeparation(L);
 
 log_base = log10(Lbase);
 max_log_base = max(log_base(:));
 log_detail = log10(Ldetail);
-compression_factor = log10(target_contrast) / (max_log_base - min(log_base(:)));
-log_absolute = compression_factor * max_log_base;
+c_factor = log10(target_contrast) / (max_log_base - min(log_base(:)));
+log_absolute = c_factor * max_log_base;
 
-log_compressed = log_base * compression_factor + log_detail  - log_absolute;
+log_Ld = log_base * c_factor + log_detail  - log_absolute;
+Ld = 10.^(log_Ld); 
 
-output = 10.^(log_compressed); 
-
-imgOut = zeros(size(img));
-for i=1:col
-    imgOut(:,:,i) = img(:,:,i) .* output;
-end
+%change luminance
+imgOut = ChangeLuminance(img, L, Ld);
 
 end

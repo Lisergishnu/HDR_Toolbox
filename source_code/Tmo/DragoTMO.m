@@ -1,19 +1,16 @@
-function [imgOut, Drago_LMax_out] = DragoTMO(img, Drago_Ld_Max, Drago_b, Drago_LMax)
+function imgOut = DragoTMO(img, d_Ld_Max, d_b)
 %
 %
-%        [imgOut, Drago_LMax_out] = DragoTMO(img, Drago_Ld_Max, Drago_b, Drago_LMax)
+%        imgOut = DragoTMO(img, d_Ld_Max, d_b)
 %
 %
 %        Input:
 %           -img: input HDR image
-%           -Drago_Ld_Max: maximum output luminance of the LDR display
-%           -Drago_b: bias parameter to be in (0,1]. The default value is 0.85 
-%           -Drago_LMax: maximum luminance to be used in case of tone
-%           mapping HDR videos
+%           -d_Ld_Max: maximum output luminance of the LDR display
+%           -d_b: bias parameter to be in (0,1]. The default value is 0.85 
 %
 %        Output:
 %           -imgOut: tone mapped image
-%           -Drago_LMax_out: max luminance in img
 % 
 %     Copyright (C) 2010-13 Francesco Banterle
 % 
@@ -41,37 +38,32 @@ check13Color(img);
 
 checkNegative(img);
 
-if(~exist('Drago_Ld_Max', 'var'))
-    Drago_Ld_Max = 100; %cd/m^2
+if(~exist('d_Ld_Max', 'var'))
+    d_Ld_Max = 100; %cd/m^2
 end
 
-if(~exist('Drago_b', 'var'))   
-    Drago_b = 0.85;
+if(~exist('d_b', 'var'))   
+    d_b = 0.85;
 end
 
 %Luminance channel
 L = lum(img);
+
 Lwa = logMean(L);
-Lwa = Lwa / ((1.0 + Drago_b - 0.85)^5);
+Lwa = Lwa / ((1.0 + d_b - 0.85)^5);
 LMax = max(L(:));
 
-if(exist('Drago_LMax', 'var'))
-    LMax = Drago_LMax;%smoothing in case of videos
-end
+L_s = L / Lwa; %scale by Lwa
+LMax_s = LMax / Lwa;
 
-Drago_LMax_out = LMax;
-
-L_wa = L / Lwa;
-LMax_wa = LMax / Lwa;
-
-c1 = log(Drago_b) / log(0.5);
-c2 = (Drago_Ld_Max / 100.0) / (log10(1 + LMax_wa));
-
-Ld = c2*log(1.0 + L_wa) ./ log(2.0 + 8.0 * ((L_wa / LMax_wa).^c1));
+c1 = log(d_b) / log(0.5);
+p1 = (d_Ld_Max / 100.0) / (log10(1 + LMax_s));
+p2 = log(1.0 + L_s) ./ log(2.0 + 8.0 * ((L_s / LMax_s).^c1));
+Ld = p1 * p2;
 
 %Changing luminance
 imgOut = ChangeLuminance(img, L, Ld);
 
-%disp('Note that tone mapped images with DragoTMO should be gamma corrected with function GammaDrago.m');
+disp('Note that tone mapped images with DragoTMO should be gamma corrected with function GammaDrago.m');
 
 end

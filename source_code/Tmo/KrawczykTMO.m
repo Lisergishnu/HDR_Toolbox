@@ -5,10 +5,10 @@ function imgOut = KrawczykTMO(img)
 %
 %
 %       Input:
-%          -img: input HDR image
+%          -img: an input HDR image
 %
 %       Output:
-%          -imgOut: tone mapped image
+%          -imgOut: a tone mapped image
 % 
 %     Copyright (C) 2010-15 Francesco Banterle
 % 
@@ -38,11 +38,8 @@ check13Color(img);
 
 checkNegative(img);
 
-%Calculate the histrogram of the HDR image in Log10 space
-nbins = 256;
-epislon = 1e-4;
-
-[histo, bound, ~] = HistogramHDR(img, nbins, 'log10', [], 0, 0, epislon);
+%compute the image histrogram in log space
+[histo, bound, ~] = HistogramHDR(img, 256, 'log10', [], 0, 0, 1e-4);
 
 %Determine how many K clusters (number of zones)
 C = bound(1):1:bound(2);
@@ -50,26 +47,26 @@ if(C(end) < bound(2))
     C = [C, bound(2)];
 end
 
-%Calculation of luminance and log luminance
+%compute luminance
 L = lum(img);
 LLog10 = log10(L + epislon);
 
-%K-means on the initial centroids
+%k-means on the initial centroids
 [C, totPixels] = KrawczykKMeans(C, bound, histo);
 
-%Enforcing distance between adjacent frameworks to be <= than 1
+%enforce the distance between adjacent frameworks to be <= 1
 while(1)
     K = length(C);
     K_old = K;
     for i=1:(K - 1)
         
         if(abs(C(i) - C(i + 1)) < 1)
-            %Merge
+            %marge frameworks
             totPixels_i = totPixels(i) + totPixels(i + 1);
             C(i) = (C(i) * totPixels(i) + C(i + 1) * totPixels(i + 1)) / totPixels_i;
             totPixels(i) = totPixels_i;
 
-            %Removing not necessary frameworks
+            %remove not necessary frameworks
             C(i + 1) = [];
             totPixels(i + 1) = [];          
             K = length(C);
@@ -83,7 +80,7 @@ while(1)
 end
 
 if(bDebug)
-    figure(1)
+    figure(1);
     delta = ((bound(2) - bound(1))/ (nbins - 1));
     hold on;
     bar(bound(1):delta:bound(2), histo/max(histo(:)));
@@ -98,7 +95,7 @@ P_norm = KrawczykPNorm(C, LLog10, sigma);
 %Partitioning the image into frameworks
 [framework, distance] = KrawczykImagePartition(C, LLog10);
 
-%Remove frameworks with P_i < 0.6
+%remove frameworks with P_i < 0.6
 while(1)
     K = length(C);
     K_old = K;
@@ -106,12 +103,12 @@ while(1)
         %Distance between frameworks has to be <= than 1
         P_i = RemoveSpecials(exp(-(C(i) - LLog10).^2 / sigma2) ./ P_norm);
         if(isempty(find(P_i(framework == i) > 0.6)))
-            %Merge
+            %merge
             totPixels_i = totPixels(i) + totPixels(i + 1);
             C(i) = (C(i) * totPixels(i) + C(i + 1) * totPixels(i + 1)) / totPixels_i;
             totPixels(i) = totPixels_i;
 
-            %Removing not necessary frameworks
+            %remove not necessary frameworks
             C(i + 1) = [];
             totPixels(i + 1) = [];          
             K = length(C);
@@ -122,7 +119,7 @@ while(1)
     if(K == K_old)
         break;
     else
-        %updating the P_i
+        %update the P_i
         [framework, distance] = KrawczykImagePartition(C, LLog10);
         sigma = KrawczykMaxDistance(C, bound);
         P_norm = KrawczykPNorm(C, LLog10, sigma);
@@ -137,7 +134,7 @@ if(bDebug)
     bar(C, ones(size(C)),  0.05, 'r');
 end
 
-%Partitioning the image into frameworks
+%partition the image into frameworks
 [height, width, col] = size(img);
 
 sigma2 = 2 * sigma^2;
@@ -157,16 +154,16 @@ for i=1:K
         %Articulation of the i-th framework
         A(i) = 1 - exp(-(maxY - minY)^2 / sigma_articulation2);
 
-        %Computing the probability P_i
+        %compute the probability P_i
         P(:,:,i) = RemoveSpecials(exp(-(C(i) - LLog10).^2 / sigma2));
-        %Spatial processing
+        %spatial processing
         P(:,:,i) = bilateralFilter(P(:,:,i), [], 0, 1, min([height, width]) / 2, 0.4);
-        %The sum of P_i for normalization
+        %normalization
         P_norm = P_norm + P(:,:,i) * A(i);
     end
 end
 
-%Calculating probability maps
+%compute probability maps
 Y = LLog10;
 for i=1:K
     indx = find(framework == i);
@@ -174,18 +171,18 @@ for i=1:K
         %P_i normalization
         P(:,:,i) = RemoveSpecials(P(:,:,i) ./ P_norm);
         
-        %Anchoring
+        %anchoring
         W = MaxQuart(LLog10(indx), 0.95);
         Y = Y - W * P(:,:,i);
     end
 end
 
-%Clamp in the range [-2, 0]
+%clamp in the range [-2, 0]
 Ld = ClampImg(Y, -2, 0);
 
-%Remap values in [0,1]
+%remap values in [0,1]
 Ld = (10.^(Ld + 2)) / 100;
 
-%Changing luminance
+%change luminance
 imgOut = ChangeLuminance(img, L, Ld);
 end

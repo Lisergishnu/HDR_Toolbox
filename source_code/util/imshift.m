@@ -1,6 +1,6 @@
-function imgOut = imshift(img, shift_vector)
+function imgOut = imShift(img, shift_vector)
 %
-%		 imgOut = imshift(img, shift_vector)
+%		 imgOut = imShift(img, shift_vector)
 %
 %
 %		 Input:

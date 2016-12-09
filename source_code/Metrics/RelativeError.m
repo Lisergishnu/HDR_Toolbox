@@ -1,7 +1,7 @@
-function val = RelativeError(imgReference, imgDistorted)
+function re = RelativeError(imgReference, imgDistorted)
 %
 %
-%      val = RelativeError(imgReference, imgDistorted)
+%      re = RelativeError(imgReference, imgDistorted)
 %
 %       the relative error between two images
 %
@@ -10,7 +10,7 @@ function val = RelativeError(imgReference, imgDistorted)
 %           -imgDistorted: input distorted image
 %
 %       Output:
-%           -val: the relative error between imgReference and imgDistorted
+%           -re: the relative error between imgReference and imgDistorted
 % 
 %     Copyright (C) 2014  Francesco Banterle
 %
@@ -28,36 +28,18 @@ function val = RelativeError(imgReference, imgDistorted)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-if(isSameImage(imgReference, imgDistorted) == 0)
-    error('The two images are different they can not be used.');
-end
-
-if(isa(imgReference, 'uint8'))
-    imgReference = double(imgReference) / 255.0;
-end
-
-if(isa(imgDistorted, 'uint8'))
-    imgDistorted = double(imgDistorted) / 255.0;
-end
-
-if(isa(imgReference, 'uint16'))
-    imgReference = double(imgReference) / 65535.0;
-end
-
-if(isa(imgDistorted, 'uint16'))
-    imgDistorted = double(imgDistorted) / 65535.0;
-end
+[imgReference, imgDistorted, ~] = checkDomains(imgReference, imgDistorted);
 
 delta = abs(imgReference - imgDistorted);
 
 relErr = delta ./ imgReference;
 
-indx = find(relErr > 0);
+indx = find(imgReference > 0);
 
 if(~isempty(indx))
-    val = mean(relErr(indx));
+    re = mean(relErr(indx));
 else
-    val = -1;
+    re = -1;
 end
 
 end
