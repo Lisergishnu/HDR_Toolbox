@@ -1,3 +1,4 @@
+
 function imgOut = FattalTMO(img, fBeta, bNormalization)
 %
 %       imgOut = FattalTMO(img, fBeta)
@@ -61,13 +62,13 @@ kernel = [1, 4, 6, 4, 1]' * [1, 4, 6, 4, 1];
 kernel = kernel / sum(kernel(:));
 
 %Generation of the pyramid
-G = [[], struct('fx', imfilter(L,kernelX,'same') / 2,'fy', imfilter(L, kernelY, 'same') / 2)];
+G = [[], struct('fx', imfilter(L, kernelX, 'same') / 2,'fy', imfilter(L, kernelY, 'same') / 2)];
 G2 = sqrt(G(1).fx.^2 + G(1).fy.^2);
 fAlpha = 0.1 * mean(G2(:));
 
 imgTmp = L;
 for i=1:numPyr
-    imgTmp=imresize(conv2(imgTmp,kernel,'same'),0.5,'bilinear');
+    imgTmp=imresize(conv2(imgTmp,kernel,'same'), 0.5,'bilinear');
     Fx = imfilter(imgTmp, kernelX, 'same') / (2^(i + 1));
     Fy = imfilter(imgTmp, kernelY, 'same') / (2^(i + 1));
     G = [G, struct('fx', Fx, 'fy', Fy)];
@@ -78,9 +79,8 @@ Phi_kp1 = FattalPhi(G(numPyr+1).fx, G(numPyr+1).fy, fAlpha, fBeta);
 
 for k=numPyr:-1:1
     [r,c] = size(G(k).fx);
-    G2 = sqrt(G(k).fx.^2 + G(k).fy.^2);
     Phi_k = FattalPhi(G(k).fx, G(k).fy, fAlpha, fBeta);
-    Phi_kp1 = imresize(Phi_kp1,[r,c],'bilinear') .* Phi_k;
+    Phi_kp1 = imresize(Phi_kp1, [r,c], 'bilinear') .* Phi_k;
 end
 
 %Calculating the divergence with backward differences
@@ -95,10 +95,13 @@ divG = RemoveSpecials(dx + dy);
 Ld = exp(PoissonSolver(divG));
 
 if(bNormalization)
-    Ld = ClampImg(Ld / MaxQuart(Ld, 0.99995), 0, 1);
+    Ld = ClampImg(Ld / max(Ld(:)), 0, 1);
 end
+
 
 %Changing luminance
 imgOut = ChangeLuminance(img, Lori, Ld);
+
+imgOut = ColorCorrection(imgOut, 0.4);
 
 end
