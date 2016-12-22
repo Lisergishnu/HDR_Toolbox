@@ -29,7 +29,7 @@ function val = PSNR(img_ref, img_dist, max_value)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-[img_ref, img_dist, domain] = checkDomains(img_ref, img_dist);
+[img_ref, img_dist, ~, mxt] = checkDomains(img_ref, img_dist);
 
 mse = MSE(img_ref, img_dist);
 
@@ -38,19 +38,7 @@ if(~exist('max_value', 'var'))
 end
 
 if(max_value < 0.0)
-    switch domain
-        case 'uint8'
-            max_value = 2^8 - 1;
-
-        case 'uint16'
-            max_value = 2^16 - 1;
-
-        case 'single'
-            max_value = max(img_ref(:));
-
-        case 'double'
-            max_value = max(img_ref(:));      
-    end
+    max_value = mxt;
 end
 
 if(mse > 0.0)

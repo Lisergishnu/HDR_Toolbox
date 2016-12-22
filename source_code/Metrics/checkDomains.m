@@ -1,4 +1,4 @@
-function [img_ref, img_dist, domain] = checkDomains(img_ref, img_dist)
+function [img_ref, img_dist, domain, max_value] = checkDomains(img_ref, img_dist)
 %
 %
 %      [img_ref, img_dist, domain] = checkDomains(img_ref, img_dist)
@@ -13,8 +13,9 @@ function [img_ref, img_dist, domain] = checkDomains(img_ref, img_dist)
 %           -img_ref: input reference image (cast to double)
 %           -img_dist: input distorted image (cast to double)
 %           -domain: image domain
+%           -max_value: maximum value of domain
 % 
-%     Copyright (C) 2006  Francesco Banterle
+%     Copyright (C) 2016  Francesco Banterle
 %
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -60,5 +61,19 @@ if(value ~= 2)
 end
 
 domain = str{index};
+
+switch domain
+    case 'uint8'
+        max_value = 2^8 - 1;
+
+    case 'uint16'
+        max_value = 2^16 - 1;
+
+    case 'single'
+        max_value = max(img_ref(:));
+
+    case 'double'
+        max_value = max(img_ref(:));      
+end
 
 end

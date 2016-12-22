@@ -1,7 +1,7 @@
-function [val, eMax, eMin] = mPSNR(img_ref, img_dist, eMin, eMax)
+function [mpsnr, eMax, eMin] = mPSNR(img_ref, img_dist, eMin, eMax)
 %
 %
-%      [val, eMax, eMin] = mPSNR(img_ref, img_dist, eMin, eMax)
+%      [mpsnr, eMax, eMin] = mPSNR(img_ref, img_dist, eMin, eMax)
 %
 %
 %       Input:
@@ -13,7 +13,7 @@ function [val, eMax, eMin] = mPSNR(img_ref, img_dist, eMin, eMax)
 %           automatically inferred.
 %
 %       Output:
-%           -val: the multiple-exposure PSNR value. Higher values means
+%           -mpsnr: the multiple-exposure PSNR value. Higher values means
 %           better quality.
 %           -eMax: the maximum exposure for computing mPSNR
 %           -eMin: the minimum exposure for computing mPSNR
@@ -69,39 +69,36 @@ invGamma = 1.0 / 2.2; %inverse gamma value
 eVec  = [];
 eMean = [];
 
-MSE = 0;
-acc = 0;
-
+mse_acc = 0;
 for i=eMin:eMax
     espo = 2^i;%Exposure
    
-    timg_ref = ClampImg(round(255 * ((espo * img_ref).^invGamma)) / 255, 0, 1);
-    val = mean(timg_ref(:));%mean value
+    timg_ref = quant8(img_ref, espo, invGamma);
+    val = mean(timg_ref(:) / 255.0); %mean value
 
     if((val > 0.1) && (val < 0.9))
         eMean = [eMean, val];
         eVec  = [eVec,  i];
-        
-        timg_dist = ClampImg(round(255 * ((espo * img_dist).^invGamma)) / 255, 0, 1);
-        
-        delta = 255 * (timg_ref - timg_dist);        
-        deltaSquared = sum(delta.^2, 3); 
-        
-        MSE = MSE+mean(deltaSquared(:));
-        acc = acc+1;
+
+        timg_dist = quant8(img_dist, espo, invGamma);
+
+        mse_acc = mse_acc + MSE(timg_ref, timg_dist);
     end
 end
 
 eMax = max(eVec);
 eMin = min(eVec);
 
-col = size(img_ref, 3);
-
-if(acc > 0)
-    MSE = MSE / acc;
-    val = 10 * log10((col * 255^2) / MSE);
+if(~isempty(eMax))
+    mse = mse_acc / length(eMax);
+    mpsnr = 20 * log10(255 / sqrt(mse));
 else
-    val = -1;
+    mpsnr = -1;
 end
 
+end
+
+function out = quant8(img, e, g)
+    img_eg = (img * e).^g;
+    out = ClampImg(round(255 * img_eg), 0.0, 255.0);
 end
