@@ -1,13 +1,13 @@
-function mae = MeanAbsoluteError(imgReference, imgDistorted)
+function mae = MeanAbsoluteError(img_ref, img_dist)
 %
 %
-%      mae = MeanAbsoluteError(imgReference, imgDistorted)
+%      mae = MeanAbsoluteError(img_ref, img_dist)
 %
 %       the mean absolute error between two images
 %
 %       Input:
-%           -imgReference: input reference image
-%           -imgDistorted: input distorted image
+%           -img_ref: input reference image
+%           -img_dist: input distorted image
 %
 %       Output:
 %           -mae: the mean absolute error between two images
@@ -28,9 +28,9 @@ function mae = MeanAbsoluteError(imgReference, imgDistorted)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-[imgReference, imgDistorted, ~] = checkDomains(imgReference, imgDistorted);
+[img_ref, img_dist, ~] = checkDomains(img_ref, img_dist);
 
-delta = abs(imgReference - imgDistorted);
+delta = abs(img_ref - img_dist);
 
 mae = mean(delta(:));
 

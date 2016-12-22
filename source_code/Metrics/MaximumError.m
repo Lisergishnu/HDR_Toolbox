@@ -1,16 +1,16 @@
-function maxErr = MaximumError(imgReference, imgDistorted)
+function maxErr = MaximumError(img_ref, img_dist)
 %
 %
-%      maxErr = MaximumError(imgReference, imgDistorted)
+%      maxErr = MaximumError(img_ref, img_dist)
 %
 %       the maximum error between two images
 %
 %       Input:
-%           -imgReference: input reference image
-%           -imgDistorted: input distorted image
+%           -img_ref: input reference image
+%           -img_dist: input distorted image
 %
 %       Output:
-%           -val: the absolute maximum error between imgReference and imgDistorted
+%           -val: the absolute maximum error between img_ref and img_dist
 % 
 %     Copyright (C) 2014-2015  Francesco Banterle
 %
@@ -28,9 +28,9 @@ function maxErr = MaximumError(imgReference, imgDistorted)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-[imgReference, imgDistorted, ~] = checkDomains(imgReference, imgDistorted);
+[img_ref, img_dist, ~] = checkDomains(img_ref, img_dist);
 
-delta = abs(imgReference - imgDistorted);
+delta = abs(img_ref - img_dist);
 
 maxErr = max(delta(:));
 

@@ -1,17 +1,18 @@
-function val = SNR(img_ref, img_dist)
+function rmse = RMSE(img_ref, img_dist)
 %
 %
-%      val = SNR(img_ref, img_dist)
+%      rmse = RMSE(img_ref, img_dist)
 %
 %
 %       Input:
-%           -img_ref: reference image
-%           -img_dist: distoreted image
+%           -img_ref: input reference image
+%           -img_dist: input distorted image
 %
 %       Output:
-%           -val: classic SNR for images in dB. Higher values means better quality.
+%           -mse: the Root Mean Squared Error assuming values in [0,1]. Lower
+%           values means better quality.
 % 
-%     Copyright (C) 2014-16  Francesco Banterle
+%     Copyright (C) 2016  Francesco Banterle
 %
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -27,19 +28,6 @@ function val = SNR(img_ref, img_dist)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-[img_ref, img_dist] = checkDomains(img_ref, img_dist);
-
-img_noise_sq = (img_ref - img_dist).^2;
-img_ref_sq = img_ref.^2;
-
-tmp1 = mean(img_ref_sq(:));
-tmp2 = mean(img_noise_sq(:));
-
-if(tmp2 > 0.0)
-    val = 10 * log10(tmp1 / tmp2);
-else
-    disp('the images are the same');
-    val = 1000.0;
-end
+rmse = sqrt(MSE(img_ref, img_dist));
 
 end

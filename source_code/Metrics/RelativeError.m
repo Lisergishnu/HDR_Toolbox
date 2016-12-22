@@ -1,16 +1,16 @@
-function re = RelativeError(imgReference, imgDistorted)
+function re = RelativeError(img_ref, img_dist)
 %
 %
-%      re = RelativeError(imgReference, imgDistorted)
+%      re = RelativeError(img_ref, img_dist)
 %
 %       the relative error between two images
 %
 %       Input:
-%           -imgReference: input reference image
-%           -imgDistorted: input distorted image
+%           -img_ref: input reference image
+%           -img_dist: input distorted image
 %
 %       Output:
-%           -re: the relative error between imgReference and imgDistorted
+%           -re: the relative error between img_ref and img_dist
 % 
 %     Copyright (C) 2014  Francesco Banterle
 %
@@ -28,13 +28,13 @@ function re = RelativeError(imgReference, imgDistorted)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-[imgReference, imgDistorted, ~] = checkDomains(imgReference, imgDistorted);
+[img_ref, img_dist, ~] = checkDomains(img_ref, img_dist);
 
-delta = abs(imgReference - imgDistorted);
+delta = abs(img_ref - img_dist);
 
-relErr = delta ./ imgReference;
+relErr = delta ./ img_ref;
 
-indx = find(imgReference > 0);
+indx = find(img_ref > 0);
 
 if(~isempty(indx))
     re = mean(relErr(indx));

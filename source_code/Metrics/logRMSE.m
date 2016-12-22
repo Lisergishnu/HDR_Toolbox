@@ -1,12 +1,12 @@
-function rmse = logRMSE(imgReference, imgDistorted)
+function rmse = logRMSE(img_ref, img_dist)
 %
 %
-%      val = logRMSE(imgReference, imgDistorted)
+%      val = logRMSE(img_ref, img_dist)
 %
 %
 %       Input:
-%           -imgReference: input source image
-%           -imgDistorted: input target image
+%           -img_ref: input source image
+%           -img_dist: input target image
 %
 %       Output:
 %           -rmse: RMSE in Log2 Space for three channels images. Lower
@@ -28,19 +28,19 @@ function rmse = logRMSE(imgReference, imgDistorted)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-if(isSameImage(imgReference, imgDistorted) == 0)
+if(isSameImage(img_ref, img_dist) == 0)
     error('The two images are different they can not be used.');
 end
 
-acc = zeros(size(imgReference, 1), size(imgReference, 2));
+acc = zeros(size(img_ref, 1), size(img_ref, 2));
 
 col = size(img, 3);
 for i=1:col
-    tmp = log2(imgReference + 1e-6) - log2(imgDistorted + 1e-6);
+    tmp = log10(img_ref + 1e-6) - log10(img_dist + 1e-6);
     acc = acc + tmp.^2;
 end
 
-mse = mean(acc(:)) / col;
+mse = mean(acc(:));
 
 rmse = sqrt(mse);
 

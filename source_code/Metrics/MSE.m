@@ -1,12 +1,12 @@
-function mse = MSE(imgReference, imgDistorted)
+function mse = MSE(img_ref, img_dist)
 %
 %
-%      mse = MSE(imgReference, imgDistorted)
+%      mse = MSE(img_ref, img_dist)
 %
 %
 %       Input:
-%           -imgReference: input reference image
-%           -imgDistorted: input distorted image
+%           -img_ref: input reference image
+%           -img_dist: input distorted image
 %
 %       Output:
 %           -mse: the Mean Squared Error assuming values in [0,1]. Lower
@@ -28,9 +28,9 @@ function mse = MSE(imgReference, imgDistorted)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-[imgReference, imgDistorted] = checkDomains(imgReference, imgDistorted);
+[img_ref, img_dist] = checkDomains(img_ref, img_dist);
 
-delta_sq = (imgReference - imgDistorted).^2;
+delta_sq = (img_ref - img_dist).^2;
 
 mse = mean(delta_sq(:));
 

@@ -1,12 +1,12 @@
-function [val, eMax, eMin] = mPSNR(imgReference, imgDistorted, eMin, eMax)
+function [val, eMax, eMin] = mPSNR(img_ref, img_dist, eMin, eMax)
 %
 %
-%      [val, eMax, eMin] = mPSNR(imgReference, imgDistorted, eMin, eMax)
+%      [val, eMax, eMin] = mPSNR(img_ref, img_dist, eMin, eMax)
 %
 %
 %       Input:
-%           -imgReference: input reference image
-%           -imgDistorted: input distorted image
+%           -img_ref: input reference image
+%           -img_dist: input distorted image
 %           -eMin: the minimum exposure for computing mPSNR. If not given it is
 %           automatically inferred.
 %           -eMax: the maximum exposure for computing mPSNR. If not given it is
@@ -34,13 +34,13 @@ function [val, eMax, eMin] = mPSNR(imgReference, imgDistorted, eMin, eMax)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-if(isSameImage(imgReference, imgDistorted) == 0)
+if(isSameImage(img_ref, img_dist) == 0)
     error('The two images are different they can not be used or there are more than one channel.');
 end
 
 if(~exist('eMin', 'var') || ~exist('eMax', 'var'))
-    L1 = lum(imgReference);
-    L2 = lum(imgDistorted);
+    L1 = lum(img_ref);
+    L2 = lum(img_dist);
     
     ind1 = find(L1 > 0);
     ind2 = find(L2 > 0);
@@ -75,16 +75,16 @@ acc = 0;
 for i=eMin:eMax
     espo = 2^i;%Exposure
    
-    timgReference = ClampImg(round(255 * ((espo * imgReference).^invGamma)) / 255, 0, 1);
-    val = mean(timgReference(:));%mean value
+    timg_ref = ClampImg(round(255 * ((espo * img_ref).^invGamma)) / 255, 0, 1);
+    val = mean(timg_ref(:));%mean value
 
     if((val > 0.1) && (val < 0.9))
         eMean = [eMean, val];
         eVec  = [eVec,  i];
         
-        timgDistorted = ClampImg(round(255 * ((espo * imgDistorted).^invGamma)) / 255, 0, 1);
+        timg_dist = ClampImg(round(255 * ((espo * img_dist).^invGamma)) / 255, 0, 1);
         
-        delta = 255 * (timgReference - timgDistorted);        
+        delta = 255 * (timg_ref - timg_dist);        
         deltaSquared = sum(delta.^2, 3); 
         
         MSE = MSE+mean(deltaSquared(:));
@@ -95,7 +95,7 @@ end
 eMax = max(eVec);
 eMin = min(eVec);
 
-col = size(imgReference, 3);
+col = size(img_ref, 3);
 
 if(acc > 0)
     MSE = MSE / acc;

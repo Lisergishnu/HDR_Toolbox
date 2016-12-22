@@ -1,17 +1,17 @@
-function [imgReference, imgDistorted, domain] = checkDomains(imgReference, imgDistorted)
+function [img_ref, img_dist, domain] = checkDomains(img_ref, img_dist)
 %
 %
-%      [imgReference, imgDistorted, domain] = checkDomains(imgReference, imgDistorted)
+%      [img_ref, img_dist, domain] = checkDomains(img_ref, img_dist)
 %
 %       This function checks if images belong to the same domain or not
 %
 %       Input:
-%           -imgReference: input reference image
-%           -imgDistorted: input distorted image
+%           -img_ref: input reference image
+%           -img_dist: input distorted image
 %
 %       Output:
-%           -imgReference: input reference image (cast to double)
-%           -imgDistorted: input distorted image (cast to double)
+%           -img_ref: input reference image (cast to double)
+%           -img_dist: input distorted image (cast to double)
 %           -domain: image domain
 % 
 %     Copyright (C) 2006  Francesco Banterle
@@ -30,7 +30,7 @@ function [imgReference, imgDistorted, domain] = checkDomains(imgReference, imgDi
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-if(isSameImage(imgReference, imgDistorted) == 0)
+if(isSameImage(img_ref, img_dist) == 0)
     error('The two images are different they can not be used or there are more than one channel.');
 end
 
@@ -42,13 +42,13 @@ str{4} = 'double';
 
 for i=1:length(str)
     
-    if(isa(imgReference, str{i}))
-        imgReference = double(imgReference);
+    if(isa(img_ref, str{i}))
+        img_ref = double(img_ref);
         count(i) = count(i) + 1;
     end
 
-    if(isa(imgDistorted, str{i}))
-        imgDistorted = double(imgDistorted);
+    if(isa(img_dist, str{i}))
+        img_dist = double(img_dist);
         count(i) = count(i) + 1;
     end
 end
