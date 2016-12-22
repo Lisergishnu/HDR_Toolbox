@@ -1,7 +1,7 @@
-function rmse = logRMSE(img_ref, img_dist)
+function log_mse = logMSE(img_ref, img_dist)
 %
 %
-%      val = logRMSE(img_ref, img_dist)
+%      log_mse = logMSE(img_ref, img_dist)
 %
 %
 %       Input:
@@ -9,10 +9,9 @@ function rmse = logRMSE(img_ref, img_dist)
 %           -img_dist: input target image
 %
 %       Output:
-%           -rmse: RMSE in Log2 Space for three channels images. Lower
-%           values means better quality.
+%           -log_mse: MSE in log10 domain. Lower values means better quality.
 % 
-%     Copyright (C) 2006-2015  Francesco Banterle
+%     Copyright (C) 2006-2016  Francesco Banterle
 %
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -28,20 +27,13 @@ function rmse = logRMSE(img_ref, img_dist)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-if(isSameImage(img_ref, img_dist) == 0)
-    error('The two images are different they can not be used.');
-end
+[img_ref, img_dist] = checkDomains(img_ref, img_dist);
 
-acc = zeros(size(img_ref, 1), size(img_ref, 2));
+img_ref = log10(img_ref + 1e-6);
+img_dist = log10(img_dist + 1e-6);
 
-col = size(img, 3);
-for i=1:col
-    tmp = log10(img_ref + 1e-6) - log10(img_dist + 1e-6);
-    acc = acc + tmp.^2;
-end
+delta_sq = (img_ref - img_dist).^2;
 
-mse = mean(acc(:));
-
-rmse = sqrt(mse);
+log_mse = mean(delta_sq(:));
 
 end
