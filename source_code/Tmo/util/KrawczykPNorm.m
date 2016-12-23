@@ -28,11 +28,11 @@ function P_norm = KrawczykPNorm(C, LLog10, sigma)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-sigma2 = 2 * sigma^2;
+sigma_sq_2 = 2 * sigma^2;
 P_norm = zeros(size(LLog10));
 
 for i=1:length(C)
-    P_norm = P_norm + exp(-(C(i) - LLog10).^2 / sigma2);
+    P_norm = P_norm + exp(-(C(i) - LLog10).^2 / sigma_sq_2);
 end
 
 end

@@ -28,10 +28,10 @@ function mse = MSE(img_ref, img_dist)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
+%check if images have same size and type
 [img_ref, img_dist] = checkDomains(img_ref, img_dist);
-
+%compute squared differences
 delta_sq = (img_ref - img_dist).^2;
-
+%compute MSE
 mse = mean(delta_sq(:));
-
 end

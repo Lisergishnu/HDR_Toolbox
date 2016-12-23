@@ -1,4 +1,4 @@
-function val = PSNR(img_ref, img_dist, max_value)
+function psnr = PSNR(img_ref, img_dist, max_value)
 %
 %
 %      val = PSNR(img_ref, img_dist, max_value)
@@ -10,7 +10,7 @@ function val = PSNR(img_ref, img_dist, max_value)
 %           -max_value: maximum value of images domain
 %
 %       Output:
-%           -val: classic PSNR for images in [0,1]. Higher values means
+%           -psnr: classic PSNR for images in [0,1]. Higher values means
 %           better quality.
 % 
 %     Copyright (C) 2016  Francesco Banterle
@@ -29,10 +29,10 @@ function val = PSNR(img_ref, img_dist, max_value)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
+%check if images have same size and type
 [img_ref, img_dist, ~, mxt] = checkDomains(img_ref, img_dist);
 
-mse = MSE(img_ref, img_dist);
-
+%determine the maximum value
 if(~exist('max_value', 'var'))
     max_value = -1000;
 end
@@ -41,10 +41,15 @@ if(max_value < 0.0)
     max_value = mxt;
 end
 
+%compute MSE
+mse = MSE(img_ref, img_dist);
+
 if(mse > 0.0)
-    val = 20 * log10(max_value / sqrt(mse));
+    %compute PSNR
+    psnr = 20 * log10(max_value / sqrt(mse));
 else
-    error('PSNR: mse values is zero or negative!'); 
+    disp('PSNR: the images are the same!');
+    psnr = 1000;
 end
 
 end

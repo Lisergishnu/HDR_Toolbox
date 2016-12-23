@@ -56,7 +56,7 @@ function imgOut = MertensTMO(img, folder_name, format, imageStack, weights, bWar
 %     in Proceedings of Pacific Graphics 2007
 %
 
-%default parameters if they are missing
+%default parameters if they are not present
 if(~exist('weights', 'var'))
     weights = ones(1, 3);
 end
@@ -75,7 +75,7 @@ if(~exist('imageStack', 'var'))
 end
 
 if(~isempty(img))
-    %Convert the HDR image into a imageStack
+    %convert the HDR image into a imageStack
     checkNegative(img);
 
     [imageStack, ~] = CreateLDRStackFromHDR(img, 1);
@@ -96,7 +96,7 @@ end
 %number of images in the stack
 [r, c, col, n] = size(imageStack);
 
-%Computation of weights for each image
+%compute the weights for each image
 total  = zeros(r, c);
 weight = ones(r, c, n);
 for i=1:n
@@ -137,25 +137,23 @@ for i=1:n
     pyrImg = pyrImg3(imageStack(:,:,:,i), @pyrLapGen);
     %Gaussian pyramid: weight   
     pyrW   = pyrGaussGen(weight(:,:,i));
-
-    %Multiplication image times weights
+    %image times weight
     tmpVal = pyrLstS2OP(pyrImg, pyrW, @pyrMul);
    
     if(i == 1)
         tf = tmpVal;
-    else
-        %accumulation
+    else %accumulate
         tf = pyrLst2OP(tf, tmpVal, @pyrAdd);    
     end
 end
 
-%Evaluation of Laplacian/Gaussian Pyramids
+%reconstruction
 imgOut = zeros(r, c, col);
 for i=1:col
     imgOut(:,:,i) = pyrVal(tf(i));
 end
 
-%Clamping
+%clamp to values in [0,1]
 imgOut = ClampImg(imgOut / max(imgOut(:)), 0.0, 1.0);
 
 if(bWarning)

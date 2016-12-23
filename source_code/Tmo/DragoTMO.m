@@ -33,9 +33,8 @@ function imgOut = DragoTMO(img, d_Ld_Max, d_b)
 %     in Proceedings of Eurographics 2003
 %
 
-%Is it a luminance or a three color channels image?
+%is it a luminance or a three color channels image?
 check13Color(img);
-
 checkNegative(img);
 
 if(~exist('d_Ld_Max', 'var'))

@@ -1,19 +1,18 @@
-function [C, totPixels] = KrawczykKMeans(C, bound, histo)
+function [C, totPixels] = KrawczykKMeans(bound, histo)
 %
 %
-%       [C, totPixels] = KrawczykKMeans(C, bound, histo)
+%       [C, totPixels] = KrawczykKMeans(bound, histo)
 %
 %
 %       Input:
-%          -C: centroids.
 %          -bound: histogram bounds.
-%          -histo: 
+%          -histo: the image histogram
 %
 %       Output:
-%          -C:
+%          -C: centroids
 %          -totPixels: 
 % 
-%     Copyright (C) 2015 Francesco Banterle
+%     Copyright (C) 2015-2016 Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -28,6 +27,12 @@ function [C, totPixels] = KrawczykKMeans(C, bound, histo)
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
+
+%compute the initial centroids
+C = bound(1):1:bound(2);
+if(C(end) < bound(2))
+    C = [C, bound(2)];
+end
 
 K = length(C);
 
@@ -81,6 +86,31 @@ for p=1:iter
     end
     oldC = C;
     oldK = K;
+end
+
+%enforce the distance between adjacent frameworks to be <= 1
+while(1)
+    K = length(C);
+    K_old = K;
+    for i=1:(K - 1)
+        
+        if(abs(C(i) - C(i + 1)) < 1)
+            %marge frameworks
+            totPixels_i = totPixels(i) + totPixels(i + 1);
+            C(i) = (C(i) * totPixels(i) + C(i + 1) * totPixels(i + 1)) / totPixels_i;
+            totPixels(i) = totPixels_i;
+
+            %remove not necessary frameworks
+            C(i + 1) = [];
+            totPixels(i + 1) = [];          
+            K = length(C);
+            break;
+        end
+    end
+    
+    if(K == K_old)
+        break;
+    end
 end
 
 end

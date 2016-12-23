@@ -1,18 +1,19 @@
-function [framework, distance] = KrawczykImagePartition(C, LLog10)
+function [framework, distance] = KrawczykImagePartition(C, LLog10, bound, totPixels)
 %
 %
-%       [framework, distance] = KrawczykImagePartition(C, LLog10)
+%       [framework, distance] = KrawczykImagePartition(C, LLog10, bound, totPixels)
 %
 %
 %       Input:
 %          -C: centroids.
 %          -LLog10: luminance in log10 domain.
+%          -totPixels: 
 %
 %       Output:
 %          -framework: 
 %          -distance:
 %
-%     Copyright (C) 2015 Francesco Banterle
+%     Copyright (C) 2015-2016 Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -44,6 +45,41 @@ for i=1:K
         
         %updating distance
         distance = tmpDistance;
+    end
+end
+
+%calcualte the maximum distance between adjacent frameworks
+sigma = KrawczykMaxDistance(C, bound);
+sigma_sq_2 = 2 * sigma^2;
+P_norm = KrawczykPNorm(C, LLog10, sigma);
+
+%remove frameworks with P_i < 0.6
+while(1)
+    K = length(C);
+    K_old = K;
+    for i=1:(K - 1)
+        %Distance between frameworks has to be <= than 1
+        P_i = RemoveSpecials(exp(-(C(i) - LLog10).^2 / sigma_sq_2) ./ P_norm);
+        if(isempty(find(P_i(framework == i) > 0.6)))
+            %merge
+            totPixels_i = totPixels(i) + totPixels(i + 1);
+            C(i) = (C(i) * totPixels(i) + C(i + 1) * totPixels(i + 1)) / totPixels_i;
+            totPixels(i) = totPixels_i;
+
+            %remove not necessary frameworks
+            C(i + 1) = [];
+            totPixels(i + 1) = [];          
+            K = length(C);
+            break;
+        end
+    end
+    
+    if(K == K_old)
+        break;
+    else
+        [framework, distance] = KrawczykImagePartition(C, LLog10, bound, totPixels);
+        sigma = KrawczykMaxDistance(C, bound);
+        P_norm = KrawczykPNorm(C, LLog10, sigma);
     end
 end
 

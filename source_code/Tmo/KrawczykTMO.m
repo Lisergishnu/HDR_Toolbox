@@ -31,133 +31,46 @@ function imgOut = KrawczykTMO(img)
 %     in Proceedings of EUROGRAPHICS 2005
 %
 
-bDebug = 0;
-
-%is it a three color channels image?
+%is it a luminance or a three color channels image?
 check13Color(img);
-
 checkNegative(img);
-
-%compute the image histrogram in log space
-[histo, bound, ~] = HistogramHDR(img, 256, 'log10', [], 0, 0, 1e-4);
-
-%Determine how many K clusters (number of zones)
-C = bound(1):1:bound(2);
-if(C(end) < bound(2))
-    C = [C, bound(2)];
-end
 
 %compute luminance
 L = lum(img);
-LLog10 = log10(L + epislon);
 
-%k-means on the initial centroids
-[C, totPixels] = KrawczykKMeans(C, bound, histo);
+%compute the image histrogram in log space
+[histo, bound, ~] = HistogramHDR(img, 256, 'log10', [], 0, 0, 1e-6);
 
-%enforce the distance between adjacent frameworks to be <= 1
-while(1)
-    K = length(C);
-    K_old = K;
-    for i=1:(K - 1)
-        
-        if(abs(C(i) - C(i + 1)) < 1)
-            %marge frameworks
-            totPixels_i = totPixels(i) + totPixels(i + 1);
-            C(i) = (C(i) * totPixels(i) + C(i + 1) * totPixels(i + 1)) / totPixels_i;
-            totPixels(i) = totPixels_i;
+LLog10 = log10(L + 1e-6);
 
-            %remove not necessary frameworks
-            C(i + 1) = [];
-            totPixels(i + 1) = [];          
-            K = length(C);
-            break;
-        end
-    end
-    
-    if(K == K_old)
-        break;
-    end
-end
-
-if(bDebug)
-    figure(1);
-    delta = ((bound(2) - bound(1))/ (nbins - 1));
-    hold on;
-    bar(bound(1):delta:bound(2), histo/max(histo(:)));
-    bar(C, ones(size(C)),  0.05, 'r');
-end
-
-%Calculating the maximum distance between adjacent frameworks
-sigma = KrawczykMaxDistance(C, bound);
-sigma2 = 2 * sigma^2;
-P_norm = KrawczykPNorm(C, LLog10, sigma);
-
-%Partitioning the image into frameworks
-[framework, distance] = KrawczykImagePartition(C, LLog10);
-
-%remove frameworks with P_i < 0.6
-while(1)
-    K = length(C);
-    K_old = K;
-    for i=1:(K - 1)
-        %Distance between frameworks has to be <= than 1
-        P_i = RemoveSpecials(exp(-(C(i) - LLog10).^2 / sigma2) ./ P_norm);
-        if(isempty(find(P_i(framework == i) > 0.6)))
-            %merge
-            totPixels_i = totPixels(i) + totPixels(i + 1);
-            C(i) = (C(i) * totPixels(i) + C(i + 1) * totPixels(i + 1)) / totPixels_i;
-            totPixels(i) = totPixels_i;
-
-            %remove not necessary frameworks
-            C(i + 1) = [];
-            totPixels(i + 1) = [];          
-            K = length(C);
-            break;
-        end
-    end
-    
-    if(K == K_old)
-        break;
-    else
-        %update the P_i
-        [framework, distance] = KrawczykImagePartition(C, LLog10);
-        sigma = KrawczykMaxDistance(C, bound);
-        P_norm = KrawczykPNorm(C, LLog10, sigma);
-    end
-end
-
-if(bDebug)
-    figure(2);
-    delta = ((bound(2) - bound(1))/ (nbins - 1));
-    hold on;
-    bar(bound(1):delta:bound(2), histo/max(histo(:)));
-    bar(C, ones(size(C)),  0.05, 'r');
-end
+%k-means for computing centroids
+[C, totPixels] = KrawczykKMeans(bound, histo);
 
 %partition the image into frameworks
-[height, width, col] = size(img);
+[framework, distance] = KrawczykImagePartition(C, LLog10, bound, totPixels);
 
-sigma2 = 2 * sigma^2;
-P_norm = zeros(size(L));
+%compute P_i
+sigma = KrawczykMaxDistance(C, bound);
+[height, width, ~] = size(img);
+sigma_sq_2 = 2 * sigma^2;
+K = length(C);
 A = zeros(K, 1);
-
-sigma_articulation2 = 2 * 0.33^2;
-
 P = zeros(height, width, K);
+P_norm = zeros(size(L));
+sigma_a_sq_2 = 2 * 0.33^2;
 
+half_dim =  min([height, width]) / 2;
 for i=1:K
     indx = find(framework == i);
     if(~isempty(indx))
+        %compute the articulation of the i-th framework
         maxY = max(LLog10(indx));
-        minY = min(LLog10(indx));
-        
-        %Articulation of the i-th framework
-        A(i) = 1 - exp(-(maxY - minY)^2 / sigma_articulation2);
-
+        minY = min(LLog10(indx));        
+        A(i) = 1 - exp(-(maxY - minY)^2 / sigma_a_sq_2);
         %compute the probability P_i
-        P(:,:,i) = RemoveSpecials(exp(-(C(i) - LLog10).^2 / sigma2));
+        P(:,:,i) = exp(-(C(i) - LLog10).^2 / sigma_sq_2);
         %spatial processing
-        P(:,:,i) = bilateralFilter(P(:,:,i), [], 0, 1, min([height, width]) / 2, 0.4);
+        P(:,:,i) = bilateralFilter(P(:,:,i), [], 0, 1, half_dim, 0.4);
         %normalization
         P_norm = P_norm + P(:,:,i) * A(i);
     end
@@ -169,8 +82,7 @@ for i=1:K
     indx = find(framework == i);
     if(~isempty(indx))
         %P_i normalization
-        P(:,:,i) = RemoveSpecials(P(:,:,i) ./ P_norm);
-        
+        P(:,:,i) = RemoveSpecials(P(:,:,i) * A(i) ./ P_norm);        
         %anchoring
         W = MaxQuart(LLog10(indx), 0.95);
         Y = Y - W * P(:,:,i);
@@ -178,10 +90,9 @@ for i=1:K
 end
 
 %clamp in the range [-2, 0]
-Ld = ClampImg(Y, -2, 0);
-
+Y = ClampImg(Y, -2, 0);
 %remap values in [0,1]
-Ld = (10.^(Ld + 2)) / 100;
+Ld = (10.^(Y + 2)) / 100;
 
 %change luminance
 imgOut = ChangeLuminance(img, L, Ld);

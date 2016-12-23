@@ -1,7 +1,7 @@
-function val = SNR(img_ref, img_dist)
+function snr = SNR(img_ref, img_dist)
 %
 %
-%      val = SNR(img_ref, img_dist)
+%      snr = SNR(img_ref, img_dist)
 %
 %
 %       Input:
@@ -9,7 +9,7 @@ function val = SNR(img_ref, img_dist)
 %           -img_dist: distoreted image
 %
 %       Output:
-%           -val: classic SNR for images in dB. Higher values means better quality.
+%           -snr: classic SNR for images in dB. Higher values means better quality.
 % 
 %     Copyright (C) 2014-16  Francesco Banterle
 %
@@ -32,14 +32,14 @@ function val = SNR(img_ref, img_dist)
 img_noise_sq = (img_ref - img_dist).^2;
 img_ref_sq = img_ref.^2;
 
-tmp1 = mean(img_ref_sq(:));
-tmp2 = mean(img_noise_sq(:));
+P_signal = mean(img_ref_sq(:));
+P_noise = mean(img_noise_sq(:));
 
-if(tmp2 > 0.0)
-    val = 10 * log10(tmp1 / tmp2);
+if(P_noise > 0.0)
+    snr = 10 * log10(P_signal / P_noise);
 else
-    disp('the images are the same');
-    val = 1000.0;
+    disp('SNR: the images are the same!');
+    snr = 1000.0;
 end
 
 end
