@@ -125,26 +125,26 @@ for i=1:n %weights normalization
 end
 
 %empty pyramid
-tf = [];
+pyrAcc = [];
 for i=1:n
     %Laplacian pyramid: image
     pyrImg = pyrImg3(imageStack(:,:,:,i), @pyrLapGen);
     %Gaussian pyramid: weight   
     pyrW   = pyrGaussGen(weight(:,:,i));
     %image times weight
-    tmpVal = pyrLstS2OP(pyrImg, pyrW, @pyrMul);
+    pyrImgW = pyrLstS2OP(pyrImg, pyrW, @pyrMul);
    
     if(i == 1)
-        tf = tmpVal;
+        pyrAcc = pyrImgW;
     else %accumulate
-        tf = pyrLst2OP(tf, tmpVal, @pyrAdd);    
+        pyrAcc = pyrLst2OP(pyrAcc, pyrImgW, @pyrAdd);
     end
 end
 
 %reconstruction
 imgOut = zeros(r, c, col);
 for i=1:col
-    imgOut(:,:,i) = pyrVal(tf(i));
+    imgOut(:,:,i) = pyrVal(pyrAcc(i));
 end
 
 %clamp to values in [0,1]
