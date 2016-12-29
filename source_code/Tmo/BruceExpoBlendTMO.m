@@ -1,18 +1,12 @@
-function imgOut = BruceExpoBlendTMO(img, folder_name, format, imageStack, beb_R, beb_beta)
+function imgOut = BruceExpoBlendTMO(img, imageStack, beb_R, beb_beta)
 %
 %
-%        imgOut = BruceExpoBlendTMO(img, folder_name, format, imageStack, beb_R, beb_beta)
+%        imgOut = BruceExpoBlendTMO(img, imageStack, beb_R, beb_beta)
 %
 %
 %        Input:
 %           -img: input HDR image
-%           -folder_name: the folder where to fetch the exposure imageStack in
-%           the case img=[]
-%           -format: the format of LDR images ('bmp', 'jpg', etc) in case
-%                    img=[] and the tone mapped images is built from a sequence of
-%                    images in the current folder_name
-%           -imageStack: an exposure stack of LDR images; in case img=[],
-%                        and folder_name='' and format=''
+%           -imageStack: an exposure stack of LDR images (use ReadLDRStack.m)
 %           -beb_R: radius in pixels for computing entropy, R parameter
 %           from the original paper
 %           -beb_beta: beta parameter from the original paper
@@ -59,27 +53,24 @@ if(~exist('beb_R', 'var'))
 end
 
 if(~isempty(img))
-    %Convert the HDR image into a imageStack    
+    %convert the HDR image into a imageStack
     checkNegative(img);
-    
+
     [imageStack, ~] = CreateLDRStackFromHDR(img, 1);
 else
-    if(isempty(imageStack))
-        imageStack = double(ReadLDRStack(folder_name, format, 1));
-    else
-        if(isa(imageStack, 'single'))
-            imageStack = double(imageStack);
-        end
-        
-        if(isa(imageStack, 'uint8'))
-            imageStack = double(imageStack) / 255.0;
-        end
-        
-        if(isa(imageStack, 'uint16'))
-            imageStack = double(imageStack) / 655535.0;
-        end        
+    if(isa(imageStack, 'single'))
+        imageStack = doubel(imageStack);
+    end
+
+    if(isa(imageStack, 'uint8'))
+        imageStack = single(imageStack) / 255.0;
+    end
+
+    if(isa(imageStack, 'uint16'))
+        imageStack = single(imageStack) / 655535.0;
     end
 end
+
 
 %number of images in the imageStack
 [r, c, col, n] = size(imageStack);

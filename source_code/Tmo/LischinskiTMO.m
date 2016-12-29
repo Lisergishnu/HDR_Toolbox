@@ -1,7 +1,7 @@
 function imgOut = LischinskiTMO(img, pAlpha, pWhite)
 %
 %
-%      imgOut = LischinskiTMO(img)
+%      imgOut = LischinskiTMO(img, pAlpha, pWhite)
 %
 %
 %       Input:
@@ -12,7 +12,7 @@ function imgOut = LischinskiTMO(img, pAlpha, pWhite)
 %       Output:
 %           -imgOut: output tone mapped image in linear domain
 % 
-%     Copyright (C) 2010 Francesco Banterle
+%     Copyright (C) 2010-2016 Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by

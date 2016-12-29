@@ -1,20 +1,14 @@
-function imgOut = MertensTMO(img, folder_name, format, imageStack, weights, bWarning)
+function imgOut = MertensTMO(img, imageStack, weights, bWarning)
 %
 %
-%        imgOut = MertensTMO(img, folder_name, format, imageStack, weights, bWarning )
+%        imgOut = MertensTMO(img, imageStack, weights, bWarning )
 %
 %        This function applies exposure fusion operator to an image or a
 %        stack.
 %
 %        Input:
 %           -img: input HDR image
-%           -folder_name: the folder where to fetch the exposure stack in
-%           the case img=[]
-%           -format: the format of LDR images ('bmp', 'jpg', etc) in case
-%                    img=[] and the tone mapped images is built from a sequence of
-%                    images in the current folder_name
-%           -imageStack: an exposure stack of LDR images; in case img=[],
-%                        and folder_name='' and format=''
+%           -imageStack: an exposure stack of LDR images (use ReadLDRStack.m)
 %           -weights: a three value vector:
 %               -weights(1): the weight for the well exposedness in [0,1]. Well exposed
 %                   pixels are taken more into account if the wE is near 1
@@ -80,16 +74,16 @@ if(~isempty(img))
 
     [imageStack, ~] = CreateLDRStackFromHDR(img, 1);
 else
-    if(isempty(imageStack))
-        imageStack = ReadLDRStack(folder_name, format, 1);
-    else
-        if(isa(imageStack, 'uint8'))
-            imageStack = single(imageStack) / 255.0;
-        end
+    if(isa(imageStack, 'single'))
+        imageStack = doubel(imageStack);
+    end
+
+    if(isa(imageStack, 'uint8'))
+        imageStack = single(imageStack) / 255.0;
+    end
         
-        if(isa(imageStack, 'uint16'))
-            imageStack = single(imageStack) / 655535.0;
-        end        
+    if(isa(imageStack, 'uint16'))
+        imageStack = single(imageStack) / 655535.0;
     end
 end
 

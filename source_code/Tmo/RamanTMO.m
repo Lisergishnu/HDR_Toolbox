@@ -1,18 +1,12 @@
-function imgOut = RamanTMO( img, folder_name, format, imageStack)
+function imgOut = RamanTMO( img, imageStack)
 %
 %
-%        imgOut = RamanTMO( img, folder_name, format, imageStack)
+%        imgOut = RamanTMO( img, imageStack)
 %
 %
 %        Input:
 %           -img: input HDR image
-%           -folder_name: the folder where to fetch the exposure imageStack in
-%           the case img=[]
-%           -format: the format of LDR images ('bmp', 'jpg', etc) in case
-%                    img=[] and the tone mapped images is built from a sequence of
-%                    images in the current folder_name
-%           -imageStack: an exposure stack of LDR images; in case img=[],
-%                        and folder_name='' and format=''
+%           -imageStack: an exposure stack of LDR images (use ReadLDRStack.m)
 %
 %        Output:
 %           -imgOut: tone mapped image
@@ -52,20 +46,16 @@ if(~isempty(img))
 
     [imageStack, ~] =  CreateLDRStackFromHDR(img, 1);
 else
-    if(isempty(imageStack))
-        imageStack = double(ReadLDRStack(folder_name, format, 1));    
-    else
-        if(isa(imageStack, 'single'))
-            imageStack = double(imageStack);
-        end
+    if(isa(imageStack, 'single'))
+        imageStack = double(imageStack);
+    end
         
-        if(isa(imageStack, 'uint8'))
-            imageStack = double(imageStack) / 255.0;
-        end
+    if(isa(imageStack, 'uint8'))
+        imageStack = double(imageStack) / 255.0;
+    end
         
-        if(isa(imageStack, 'uint16'))
-            imageStack = double(imageStack) / 655535.0;
-        end        
+    if(isa(imageStack, 'uint16'))
+        imageStack = double(imageStack) / 655535.0;
     end
 end
 
