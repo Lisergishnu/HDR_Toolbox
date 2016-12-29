@@ -7,7 +7,7 @@
 %	   4) Save the tone mapped image as PNG
 %
 %       Author: Francesco Banterle
-%       Copyright June 2012-13 (c)
+%       Copyright 2012-16 (c)
 %
 
 clear all;

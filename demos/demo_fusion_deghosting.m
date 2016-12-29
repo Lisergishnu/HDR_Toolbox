@@ -1,7 +1,7 @@
 %
 %       HDR Toolbox demo Deghosting+Fusion:
 %       Author: Francesco Banterle
-%       Copyright June 2012 (c)
+%       Copyright 2012-2016 (c)
 %
 %
 

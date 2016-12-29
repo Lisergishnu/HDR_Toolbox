@@ -15,10 +15,11 @@
 % 
 
 clear all;
+[stack, norm_value] = ReadLDRStack('stack', 'jpg', 1);
 
 %Raman's method
 disp('1) Applying Fusion Operator by Raman and Chaudhuri to images in stack folder');
-imgTMO = RamanTMO([], 'stack', 'jpg');
+imgTMO = RamanTMO([], stack);
 
 disp('2) Showing the image after fusion, note that there is no need of gamma correction!');
 h = figure(1);
@@ -30,7 +31,7 @@ imwrite(imgTMO, 'office_raman_TMO.png');
 
 %Mertens's method
 disp('4) Applying Fusion Operator by Mertens et al to images in stack folder');
-imgTMO = MertensTMO([], 'stack', 'jpg', []);
+imgTMO = MertensTMO([], stack);
 
 disp('5) Showing the image after fusion, note that there is no need of gamma correction!');
 h = figure(2);
@@ -42,7 +43,7 @@ imwrite(imgTMO, 'office_mertens_TMO.png');
 
 %Bruce's method
 disp('7) Applying Fusion Operator by Bruce to images in stack folder');
-imgOut = BruceExpoBlendTMO([], 'stack', 'jpg', [], 29, 6);
+imgOut = BruceExpoBlendTMO([], stack, 29, 6);
 
 disp('8) Showing the image after fusion, note that there is no need of gamma correction!');
 h = figure(3);
