@@ -35,15 +35,11 @@ function imgTMO_c = ColorCorrectionPouli(imgHDR, imgTMO)
 %     in the Twenty-first Color and Imaging Conference (CIC21), Albuquerque, Nov. 2013 
 %
 
-check3Color(imgHDR);
-check3Color(imgTMO);
-
-[r1, c1, ~] = size(imgHDR);
-[r2, c2, ~] = size(imgTMO);
-
-if((r1 ~= r2) || (c1 ~= c2))
+if(~isSameImage(imgHDR, imgTMO))
     error('ERROR: imgHDR and imgTMO have different spatial resolutions.');
 end
+
+check3Color(imgHDR);
 
 %normalization step
 max_TMO = max(imgTMO(:));
