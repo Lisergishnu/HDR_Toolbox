@@ -28,7 +28,7 @@ function imgOut = ConvertLMStoIPT(img, inverse)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-%matrix conversion from XYZ to IPT
+%matrix conversion from LMS to IPT
 mtxLMStoIPT = [0.4000 0.4000 0.2000; 4.4550 -4.8510 0.3960; 0.8056 0.3572 -1.1628];
 
 if(inverse == 0)

@@ -13,7 +13,7 @@ function imgTMO_c = ColorCorrectionPouli(imgHDR, imgTMO)
 %       output:
 %         - imgTMO_c: imgTMO with color correction
 %
-%     Copyright (C) 2013  Francesco Banterle
+%     Copyright (C) 2013-2016  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -49,35 +49,31 @@ end
 max_TMO = max(imgTMO(:));
 max_HDR = max(imgHDR(:));
 imgHDR = imgHDR / max_HDR;
-imgTMO = imgTMO / max_HDR;
+imgTMO = imgTMO / max_TMO;
 
-%conversion in the XYZ color space
+%conversion from RGB to XYZ
 imgTMO_XYZ = ConvertRGBtoXYZ(imgTMO, 0);
 imgHDR_XYZ = ConvertRGBtoXYZ(imgHDR, 0);
-
-%conversion in the IPT color space
+%conversion from XYZ to IPT
 imgTMO_IPT = ConvertXYZtoIPT(imgTMO_XYZ, 0);
 imgHDR_IPT = ConvertXYZtoIPT(imgHDR_XYZ, 0);
+%conversion from IPT to ICh
+imgTMO_ICh = ConvertIPTtoICh(imgTMO_IPT, 0);
+imgHDR_ICh = ConvertIPTtoICh(imgHDR_IPT, 0);
 
-%ICh color space
-C_TMO = sqrt(imgTMO_IPT(:,:,2).^2+imgTMO_IPT(:,:,3).^2);
-C_HDR = sqrt(imgHDR_IPT(:,:,2).^2+imgHDR_IPT(:,:,3).^2);
+%the main algorithm
+C_TMO_prime = imgTMO_IPT(:,:,2) .* imgHDR_ICh(:,:,1) ./ imgTMO_ICh(:,:,1);
+r1 = SaturationPouli(imgHDR_ICh(:,:,2), imgHDR_ICh(:,:,1));
+r2 = SaturationPouli(C_TMO_prime, imgTMO_ICh(:,:,1));
+r = r1 ./ r2; %final scale
+imgTMO_ICh(:,:,2) = r .* C_TMO_prime; %final scale
+imgTMO_ICh(:,:,3) = imgHDR_ICh(:,:,3); %same hue of HDR
 
-%h_TMO = atan2(imgTMO_IPT(:,:,2)./imgTMO_IPT(:,:,3));
-h_HDR = atan2(imgHDR_IPT(:,:,2), imgHDR_IPT(:,:,3));
-
-%algorithm
-C_TMO_prime = C_TMO .* imgHDR_IPT(:,:,1) ./ imgTMO_IPT(:,:,1);
-r = SaturationPouli(C_HDR, imgHDR_IPT(:,:,1))./SaturationPouli(C_TMO_prime, imgTMO_IPT(:,:,1));
-C_c = r .* C_TMO_prime;%final scale
-
-imgTMO_c_IPT = zeros(size(imgTMO));
-imgTMO_c_IPT(:,:,1) = imgTMO_IPT(:,:,1);
-imgTMO_c_IPT(:,:,2) = sin(h_HDR) .* C_c;%Same Hue of imgHDR
-imgTMO_c_IPT(:,:,3) = cos(h_HDR) .* C_c;%Same Hue of imgHDR
-
-%conversion back
+%conversion from IPT to XYZ
+imgTMO_c_IPT = ConvertIPTtoICh(imgTMO_ICh, 1);
+%conversion from IPT to XYZ
 imgTMO_c_XYZ = ConvertXYZtoIPT(imgTMO_c_IPT, 1);
+%conversion from XYZ to RGB
 imgTMO_c = ConvertRGBtoXYZ(imgTMO_c_XYZ, 1);
 
 end

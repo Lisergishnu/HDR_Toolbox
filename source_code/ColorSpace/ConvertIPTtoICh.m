@@ -1,18 +1,18 @@
-function imgOut = ConvertXYZtoIPT(img, inverse)
+function imgOut = ConvertIPTtoICh(img, inverse)
 %
-%       imgOut = ConvertXYZtoIPT(img, inverse)
+%       imgOut = ConvertIPTtoICh(img, inverse)
 %
 %
 %        Input:
-%           -img: image to convert from XYZ to IPT or from IPT to XYZ.
+%           -img: image to convert from IPT to ICh or from ICh to IPT.
 %           -inverse: takes as values 0 or 1. If it is set to 1 the
-%                     transformation from XYZ to IPT is applied, otherwise
-%                     the transformation from IPT to XYZ.
+%                     transformation from IPT to ICh is applied, otherwise
+%                     the transformation from IChto IPT.
 %
 %        Output:
-%           -imgOut: converted image in XYZ or IPT.
+%           -imgOut: converted image in IPT or ICh (see inverse).
 %
-%     Copyright (C) 2011  Francesco Banterle
+%     Copyright (C) 2016  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -28,15 +28,16 @@ function imgOut = ConvertXYZtoIPT(img, inverse)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-if(inverse == 0)   
-    imgLMS = ConvertXYZtoLMS(img, 0);
-    
-    imgOut = ConvertLMStoIPT(imgLMS, 0);
-    
+check3Color(img);
+
+imgOut = img;
+
+if(inverse == 0)%ICh color space
+    imgOut(:,:,2) = sqrt(img(:,:,2).^2 + img(:,:,3).^2);
+    imgOut(:,:,3) = atan2(img(:,:,2), img(:,:,3));
 else
-    imgLMS = ConvertLMStoIPT(img, 1);
-    
-    imgOut = ConvertXYZtoLMS(imgLMS, 1);
+    imgOut(:,:,2) = sin(img(:,:,3)) .* img(:,:,2);
+    imgOut(:,:,3) = cos(img(:,:,3)) .* img(:,:,2);
 end
             
 end
