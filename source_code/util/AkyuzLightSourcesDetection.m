@@ -1,21 +1,16 @@
-function [key, Lav] = imKey(img, bRobust)
+function [mask, s] = AkyuzLightSourcesDetection(img)
+%
+%       [mask, s] = AkyuzLightSourcesDetection(img)
 %
 %
-%       key = imKey(img)
+%        Input:
+%           -img: a HDR image
 %
-%       This function computes image key.
+%        Output:
+%           -mask: light sources mask
+%           -s: spatially varying parameters
 %
-%       Input:
-%           -img: an image
-%
-%       Output:
-%           -key: the image's key
-%           -Lav: 
-% 
-%       This function segments an image into different dynamic range zones
-%       based on their order of magnitude.
-%
-%     Copyright (C) 2016  Francesco Banterle
+%     Copyright (C) 2017  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -31,23 +26,23 @@ function [key, Lav] = imKey(img, bRobust)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-if(~exist('bRobust', 'var'))
-    bRobust = 0.01;
-end
-
-%Calculate image statistics
 L = lum(img);
-Lav  = logMean(L);
+maxL = MaxQuart(L, 0.95);
+minL = MaxQuart(L, 0.05);
+delta = (maxL - minL);
+[key, ~] = imKey(img, 0.05);
 
-if(bRobust > 0.0)
-    maxL = MaxQuart(L, 1 - bRobust);
-    minL = MaxQuart(L(L > 0), bRobust);
-else
-    maxL = max(L(:));
-    minL = min(L(:));
+L_t = (0.6 + 0.4 * (1 - key)) * delta + minL;
+
+mask = zeros(size(L));
+mask(L >= L_t) = 1;
+
+L_t0 = max([minL, L_t - 0.1 * delta]);
+L_t1 = min([maxL, L_t + 0.1 * delta]);
+s = (L - L_t + 0.1 * delta) / (L_t1 - L_t0);
+s = 1 - 3.0 * s.^2 + 2 * s.^3;
+
+s(L < L_t0) = 1;
+s(L > L_t1) = 0;
+
 end
-
-key = (log(Lav) - log(minL)) / (log(maxL) - log(minL));
-
-end
-

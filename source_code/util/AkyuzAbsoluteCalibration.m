@@ -1,21 +1,15 @@
-function [key, Lav] = imKey(img, bRobust)
+function imgOut = AkyuzAbsoluteCalibration(img)
+%
+%       imgOut = AkyuzAbsoluteCalibration(img)
 %
 %
-%       key = imKey(img)
+%        Input:
+%           -img: a HDR image
 %
-%       This function computes image key.
+%        Output:
+%           -imgOut: a calibrated version of img using heuristics.
 %
-%       Input:
-%           -img: an image
-%
-%       Output:
-%           -key: the image's key
-%           -Lav: 
-% 
-%       This function segments an image into different dynamic range zones
-%       based on their order of magnitude.
-%
-%     Copyright (C) 2016  Francesco Banterle
+%     Copyright (C) 2017  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -31,23 +25,9 @@ function [key, Lav] = imKey(img, bRobust)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-if(~exist('bRobust', 'var'))
-    bRobust = 0.01;
-end
-
-%Calculate image statistics
 L = lum(img);
-Lav  = logMean(L);
-
-if(bRobust > 0.0)
-    maxL = MaxQuart(L, 1 - bRobust);
-    minL = MaxQuart(L(L > 0), bRobust);
-else
-    maxL = max(L(:));
-    minL = min(L(:));
-end
-
-key = (log(Lav) - log(minL)) / (log(maxL) - log(minL));
+[key, ~] = imKey(img, 0.05);
+f = 10^4 * key / MaxQuart(L, 0.95);
+imgOut = img * f;
 
 end
-
