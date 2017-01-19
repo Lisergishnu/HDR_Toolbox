@@ -16,7 +16,7 @@ function imgOut = ReinhardDevlinTMO(img, rd_m, rd_f, rd_a, rd_c, bNormalization)
 %       Output:
 %           -imgOut: output tone mapped image in linear domain
 %
-%     Copyright (C) 2013-15  Francesco Banterle
+%     Copyright (C) 2013-16  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -37,9 +37,10 @@ function imgOut = ReinhardDevlinTMO(img, rd_m, rd_f, rd_a, rd_c, bNormalization)
 %     in IEEE Transaction on Computer Graphics and Visualization 2005
 %
 
+%is it a luminance or a three color channels image?
 check13Color(img);
 
-check3Color(img);
+checkNegative(img);
 
 %Luminance channel
 L   = lum(img);

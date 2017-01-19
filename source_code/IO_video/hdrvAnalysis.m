@@ -1,16 +1,19 @@
-function [hm_v, max_v, min_v, mean_v] = hdrvAnalysis(hdrv)
+function [hdrv, stats_v, hists_v] = hdrvAnalysis(hdrv, percentile, crop_rect)
 %
-%         [hm_v, max_v, min_v, mean_v] = hdrvAnalysis(hdrv)
+%         [hdrv, stats_v, hists_v] = hdrvAnalysis(hdrv, percentile)
 %
+%        This function computes the statistics of all frames of an HDR
+%        video.
 %
 %        Input:
 %           -hdrv: a open HDR video structure
+%           -percentile: the percentile for robust statistics
+%           -crop_rect:
 %
 %        Output:
-%           -hm_v  : harmonic mean of each frame
-%           -max_v : max of each frame
-%           -min_v : min value of each frame
-%           -mean_v: mean of each frame
+%           -hdrv  : a close HDR video structure
+%           -stats_v  : harmonic mean of each frame
+%           -hists_v : max of each frame
 %
 %     Copyright (C) 2013-15  Francesco Banterle
 % 
@@ -28,11 +31,32 @@ function [hm_v, max_v, min_v, mean_v] = hdrvAnalysis(hdrv)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-hm_v   = zeros(hdrv.totalFrames, 1);
-max_v  = zeros(hdrv.totalFrames, 1);
-min_v  = zeros(hdrv.totalFrames, 1);
-mean_v = zeros(hdrv.totalFrames, 1);
+if(~exist('percentile', 'var'))
+    percentile = 0.99;
+end
 
+if(percentile > 1)
+    percentile = 0.99;
+end
+
+if(percentile < 0.5)
+    percentile = 0.5 + 1e-6;
+end
+
+if(~exist('crop_rect', 'var'))
+    bCR = 0;
+else    
+    if(~isempty(crop_rect))
+        bCR = (crop_rect(1) > 0 & crop_rect(2) > 0);
+    else
+        bCR = 0;
+    end
+end
+
+nBins = 256;
+
+stats_v = zeros(hdrv.totalFrames, 6);
+hists_v = zeros(hdrv.totalFrames, nBins);
 bClose = 0;
 
 if(hdrv.streamOpen == 0)
@@ -43,19 +67,28 @@ end
 disp('Video Analysis...');
 for i=1:hdrv.totalFrames
     disp(['Processing Frame: ', num2str(i)]);
-    [frame, hdrv] = hdrvGetFrame(hdrv, i);
+    [frame, hdrv] = hdrvGetFrame(hdrv, i);    
+        
+    if(bCR)
+        [r,c,~] = size(frame);    
+        frame = frame(crop_rect(1):(r - crop_rect(1)), ...
+                      crop_rect(2):(c - crop_rect(2)), :);
+    end
     
-    %Only physical values
-    frame = RemoveSpecials(frame);
-    frame(frame<0) = 0;   
-    
-    L = RemoveSpecials(lum(frame));
-    L(L < 0.0) = 0;
-    
-    hm_v(i)   = logMean(L);
-    max_v(i)  = max(L(:));
-    min_v(i)  = min(L(:));
-    mean_v(i) = mean(L(:));
+    %remove specials
+    frame = RemoveSpecials(frame);    
+    %remove specials
+    L = lum(frame);
+    indx = find(L >= 0.0);
+    if(~isempty(indx))
+        stats_v(i, 1) = min(L(indx));
+        stats_v(i, 2) = max(L(indx));
+        stats_v(i, 3) = MaxQuart(L(indx), 1 - percentile);
+        stats_v(i, 4) = MaxQuart(L(indx), percentile);
+        stats_v(i, 5) = mean(L(indx));
+        stats_v(i, 6) = logMean(L(indx));        
+        hists_v(i, :) = HistogramHDR(L(indx), nBins, 'log10', [-6, 6], 0, 0, 1e-6);
+    end
 end
 
 disp('done');

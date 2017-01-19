@@ -28,7 +28,6 @@ function hdrv = hdrvread(filename)
 hdrv = [];
 
 if(isdir(filename))
-    
     if(filename(end) == '/')
        filename(end) = []; 
     end
@@ -52,65 +51,46 @@ if(isdir(filename))
     end
     
     if(isempty(tmp_list))
-        type = 'TYPE_HDR_FAIL';
+        error('hdrvread: not a valid directory!');
     end
     
     hdrv = struct('type', type, 'path', filename, 'list', tmp_list, ...
                   'totalFrames', length(tmp_list), 'FrameRate', 24, ...
                   'frameCounter', 1, 'streamOpen', 0, ...
-                  'permission', 'u');
+                  'permission', 'r');
 else
-    nameOut = RemoveExt(filename);
+    nameER = RemoveExt(filename);
     fileExt = fileExtension(filename);
 
-    if(~isempty(fileExt))          
-        if(strfind(nameOut, '_LK08_'))%is it a Lee and Kim 2008 HDRv stream?
-            type = 'TYPE_HDRV_LK08';
-
-            pos = strfind(nameOut, '_LK08_');
-            name = nameOut(1:(pos - 1));        
-            streamTMO = VideoReader([name, '_LK08_tmo.', fileExt]);
-            streamR = VideoReader([name, '_LK08_residuals.', fileExt]);
-            Rinfo = load([name, '_LK08_Rinfo.mat']);
-            hdrv = struct('type', type, 'path',nameOut, 'totalFrames', streamTMO.NumberOfFrames, ...
-                          'FrameRate', streamTMO.FrameRate, 'frameCounter', 1, ...
-                          'streamOpen', 0, 'streamTMO', streamTMO, ...
-                          'streamR',  streamR, 'Rinfo', Rinfo, ...
-                          'permission', 'u');
+    if(~isempty(fileExt))
+        type = 'TYPE_HDR_VIDEO';
+        
+        streamTMO = VideoReader(filename);
+            
+        nameR = [nameER, '_r.', fileExt];
+        if(exist(nameR, 'file') == 2)
+            streamR = VideoReader(nameR);
+        else
+            streamR = [];
+        end
+        
+        nameInfo = [nameER, '_info.mat'];
+        if(exist(nameInfo, 'file') == 2)
+            info = load(nameInfo);
+        else
+            info = [];
         end        
 
-        if(strfind(nameOut, '_ZRB11_'))%is it a Motra and Zhang Reinhard Bull 2011 HDRv stream?
-            type = 'TYPE_HDRV_ZRB11';
-
-            pos = strfind(nameOut, '_ZRB11_');
-            name = nameOut(1:(pos - 1));        
-            stream = VideoReader([name, '_ZRB11_LUV.', fileExt]);
-            info = load([name, '_ZRB11_info.mat']);
-            hdrv = struct('type', type, 'path', nameOut, 'totalFrames', ...
-                          stream.NumberOfFrames, ...
-                          'FrameRate', stream.FrameRate, 'frameCounter', 1, ...
-                          'streamOpen', 0, 'stream', stream, 'info', info, ...
-                          'permission', 'u');
-        end
-
-        if(strfind(nameOut, '_MAI11_'))%is it a Mai et al. 2011 HDRv stream?
-            type = 'TYPE_HDRV_MAI11';
-
-            pos = strfind(nameOut, '_MAI11_');
-            name = nameOut(1:(pos - 1));        
-
-            streamTMO = VideoReader([name, '_MAI11_tmo.', fileExt]);
-            streamR = VideoReader([name, '_MAI11_residuals.', fileExt]);
-
-            info = load([name, '_MAI11_info.mat']);
-            hdrv = struct('type', type, 'path', nameOut, 'totalFrames', ...
-                          streamTMO.NumberOfFrames, 'FrameRate', ...
-                          streamTMO.FrameRate, 'frameCounter', 1, ...
-                          'streamOpen', 0, 'streamTMO', streamTMO, ...
-                          'streamR', streamR, 'info', info, 'permission', 'u');
-        end    
+        hdrv = struct('type', type, 'path', nameER, ...
+                      'totalFrames', streamTMO.NumberOfFrames, ...
+                      'FrameRate', streamTMO.FrameRate, 'frameCounter', 1, ...
+                      'streamOpen', 0, ...
+                      'streamTMO', streamTMO, ...
+                      'streamR',  streamR, ...
+                      'info', info, ...
+                      'permission', 'r');      
     else
-        mkdir(filename);
+        error('hdrvread: not a valid file!');
     end    
 end
 

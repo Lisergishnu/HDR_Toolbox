@@ -1,19 +1,17 @@
-function hdrv = hdrvopen(hdrv, permission)
+function hdrv = hdrvopen(hdrv)
 %
 %        hdrv = hdrvopen(hdrv)
 %
 %
 %        Input:
 %           -hdrv: a HDR video structure.
-%           -permission: writing, 'w' value, or reading, 'r' value,
-%           permissions.
 %
 %        Output:
 %           -hdrv: a HDR video structure.
 %
 %        This function opens the video stream for reading frames
 %
-%     Copyright (C) 2013-15  Francesco Banterle
+%     Copyright (C) 2013-17  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -32,21 +30,15 @@ function hdrv = hdrvopen(hdrv, permission)
 if(hdrv.streamOpen == 0) 
     hdrv.permission = permission;
     
-    if(permission == 'w') 
-        if((strfind(ldrv.type, 'TYPE_HDRV_LK08') == 1))
-           open(ldrv.streamTMO);
-           open(ldrv.streamR);
-        end       
-
-        if((strfind(ldrv.type, 'TYPE_HDRV_ZRB11') == 1))
-           open(ldrv.stream);
-        end              
+    if(permission == 'r' && (strfind(hdrv.type, 'TYPE_HDR_VIDEO') == 1))
+        if(~isempty(hdrv.streamTMO))
+           open(ldrv.streamTMO);            
+        end
         
-        if((strfind(ldrv.type, 'TYPE_HDRV_MAI11') == 1))
-           open(ldrv.streamTMO);
-           open(ldrv.streamR);
-        end             
-    end    
+        if(~isempty(hdrv.streamR))
+           open(ldrv.streamR);            
+        end
+    end 
     
     hdrv.streamOpen = 1;
 end

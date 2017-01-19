@@ -11,7 +11,7 @@ function ldrv = ldrvclose(ldrv)
 %
 %        This function closes a video stream (ldrv) for reading frames
 %
-%     Copyright (C) 2013  Francesco Banterle
+%     Copyright (C) 2013-2017  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -29,12 +29,9 @@ function ldrv = ldrvclose(ldrv)
 
 if(ldrv.streamOpen == 1)
 
-    if(strfind(ldrv.type, 'TYPE_LDR_VIDEO') == 1 & ldrv.permission == 'w')
-        if(~isempty(ldrv.stream))
-            close(ldrv.stream);
-        end
-    end
-    
+    if(strfind(ldrv.type, 'TYPE_LDR_VIDEO'))
+        close(ldrv.stream);
+    end    
     ldrv.streamOpen = 0;
 end
 

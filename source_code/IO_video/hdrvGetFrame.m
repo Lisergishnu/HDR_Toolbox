@@ -12,7 +12,7 @@ function [frame, hdrv] = hdrvGetFrame(hdrv, frameCounter)
 %           -frame: the frame at frameCounter
 %           -hdrv: the updated HDR video structure
 %
-%     Copyright (C) 2013  Francesco Banterle
+%     Copyright (C) 2013-2017  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ else
     end
 end
 
-%reading the actual frame
+%read the actual frame
 switch hdrv.type
     case 'TYPE_HDR_PFM'
         frame = hdrimread([hdrv.path,'/',hdrv.list(frameCounter).name]);
@@ -57,22 +57,23 @@ switch hdrv.type
     case 'TYPE_HDR_JPEG_2000'
         frame = hdrimread([hdrv.path,'/',hdrv.list(frameCounter).name]);
 
-    case 'TYPE_HDRV_LK08'
-        frameTMO = read(hdrv.streamTMO, frameCounter); 
-        frameR   = read(hdrv.streamR, frameCounter);       
-        frame = LeeKimHDRvDecFrame(frameTMO, frameR, hdrv.Rinfo.r_min(frameCounter), hdrv.Rinfo.r_max(frameCounter));
-
-    case 'TYPE_HDRV_ZRB11'
-        frameLUV = read(hdrv.stream, frameCounter); 
-        frame = ZhangHDRvDecFrame(frameLUV, hdrv.info.table_y(frameCounter,:));        
-
-    case 'TYPE_HDRV_MAI11'
-        frameTMO = read(hdrv.streamTMO, frameCounter); 
-        frameR = read(hdrv.streamR, frameCounter); 
-        frame = MaiHDRvDecFrame(frameTMO, hdrv.info.tone_function(frameCounter).l, hdrv.info.tone_function(frameCounter).v, frameR, hdrv.info.r_min(frameCounter), hdrv.info.r_max(frameCounter));
+    case 'TYPE_HDR_VIDEO'
+        if(~isempty(hdrv.streamTMO))
+            frameTMO = read(hdrv.streamTMO, frameCounter); 
+        else
+            frameTMO = [];
+        end
         
+        if(~isempty(hdrv.streamR))
+            frameR   = read(hdrv.streamR, frameCounter);       
+        else
+            frameR = [];
+        end
+        
+        frame = HDRvDecodeFrame(frameTMO, frameR, hdrv.info);        
 end
 
-%updating the counter
+%update the counter
 hdrv.frameCounter = mod(frameCounter + 1, maxFrames + 1);
+
 end
