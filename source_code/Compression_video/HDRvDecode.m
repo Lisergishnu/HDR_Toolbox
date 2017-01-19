@@ -1,18 +1,18 @@
-function AnyCodecHDRvDec(hdrv, name)
+function HDRvDecode(hdrv, name)
 %
 %
-%       AnyCodedHDRvDec(hdrv, name)
+%       HDRvDecode(hdrv, name)
 %
-%       This function decodes HDRv streams
+%       This function decodes an HDRv stream into a directory
 %
 %       Input:
 %           -hdrv: an HDR video stream, use hdrvread for opening a stream
 %           -name: this is the output name of the decoded stream as single
 %           hdr frames. For example, name = 'output.pfm' will save the hdr);v
 %           as .pfm files, or name = 'output.hdr', will save the hdrv as
-%           .hdr files
+%           .hdr files into the directory 'output'
 %
-%     Copyright (C) 2013-14  Francesco Banterle
+%     Copyright (C) 2013-17  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -35,19 +35,21 @@ function AnyCodecHDRvDec(hdrv, name)
 %
 %
 
-hdrv = hdrvopen(hdrv, 'r');
+hdrv = hdrvopen(hdrv);
 
-name = RemoveExt(filenameOutput);
-ext  = fileExtension(filenameOutput);
+nameER = RemoveExt(name);
+ext = fileExtension(name);
+
+makedir(nameER);
 
 for i=1:hdrv.totalFrames
     disp(['Processing frame ', num2str(i)]);
     
-    %getting the current HDR frame
+    %get the current HDR frame
     [frame, hdrv] = hdrvGetFrame(hdrv, i);
 
-    %saving the frame    
-    hdrimwrite(frame, [name, sprintf('%.10d',i), '.', ext]);
+    %save the frame as a file
+    hdrimwrite(frame, [nameER, '_hdrv/frame_', sprintf('%.10d',i), '.', ext]);
 end
 
 hdrvclose(hdrv);
