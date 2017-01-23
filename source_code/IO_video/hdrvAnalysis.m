@@ -60,7 +60,7 @@ hists_v = zeros(hdrv.totalFrames, nBins);
 bClose = 0;
 
 if(hdrv.streamOpen == 0)
-    hdrv = hdrvopen(hdrv, 'r');
+    hdrv = hdrvopen(hdrv);
     bClose = 1;
 end
 

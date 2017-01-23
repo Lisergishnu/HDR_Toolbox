@@ -122,7 +122,7 @@ H = zeros(3, 3);
 ok = [];
 
 for t = 1:maxIterations
-  % estimate homograpyh
+  % estimate homography
   subset = vl_colsubset(1:numMatches, 4);
   A = [] ;
   for i = subset
@@ -132,10 +132,10 @@ for t = 1:maxIterations
   [~, ~, V] = svd(A);
   H_t = reshape(V(:,9),3,3);
 
-  % score homography
+  %score homography
   X2_ = H_t * X1;
-  du = X2_(1,:)./X2_(3,:) - X2(1,:)./X2(3,:);
-  dv = X2_(2,:)./X2_(3,:) - X2(2,:)./X2(3,:);
+  du = X2_(1,:) ./ X2_(3,:) - X2(1,:)./X2(3,:);
+  dv = X2_(2,:) ./ X2_(3,:) - X2(2,:)./X2(3,:);
   ok_t = (du.*du + dv.*dv) < 4;
   
   score_t = sum(ok_t);
@@ -146,8 +146,7 @@ for t = 1:maxIterations
   end
 end
 
-
-% Optional refinement
+%optional refinement
 function err = residual(H)
     u = H(1) * X1(1,ok) + H(4) * X1(2,ok) + H(7);
     v = H(2) * X1(1,ok) + H(5) * X1(2,ok) + H(8);

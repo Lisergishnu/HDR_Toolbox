@@ -35,16 +35,16 @@ window = window/sum(sum(window));
 %----------------------------------------------------
 img1 = double(L_hdr);
 img2 = double(L_ldr);
-mu1   = filter2(window, img1, 'valid');
-mu2   = filter2(window, img2, 'valid');
+mu1   = filter2(window, img1, 'same');
+mu2   = filter2(window, img2, 'same');
 mu1_sq = mu1.*mu1;
 mu2_sq = mu2.*mu2;
 mu1_mu2 = mu1.*mu2;
-sigma1_sq = filter2(window, img1.*img1, 'valid') - mu1_sq;
-sigma2_sq = filter2(window, img2.*img2, 'valid') - mu2_sq;
+sigma1_sq = filter2(window, img1.*img1, 'same') - mu1_sq;
+sigma2_sq = filter2(window, img2.*img2, 'same') - mu2_sq;
 sigma1 = sqrt(max(0, sigma1_sq));
 sigma2 = sqrt(max(0, sigma2_sq));
-sigma12 = filter2(window, img1.*img2, 'valid') - mu1_mu2;
+sigma12 = filter2(window, img1.*img2, 'same') - mu1_mu2;
 %-------------------------------------------------------
 % Mannos CSF Function
 %f=8;

@@ -98,15 +98,20 @@ indx1 = find(mask == 0);
 %are both TMOs used?
 if(~isempty(indx0) && ~isempty(indx1)) %pyramid blending with gamma encoding
     img_dra_tmo = DragoTMO(img);
-    img_rei_tmo = ReinhardTMO(img, -1, -1, 'local', -1);
+    img_rei_tmo = ReinhardTMO(img, 0.5, -1, 'local', -1);
 
     gamma = 2.2;
     invGamma = 1.0 / gamma;
     imgA   = img_rei_tmo.^invGamma;
     imgB   = img_dra_tmo.^invGamma;
     
+    imwrite(imgA, 'banterle_rei.png');
+    imwrite(imgB, 'banterle_dra.png');
+    imwrite(mask, 'banterle_mask.png');
+    
     %removing gamma for linear output
     imgOut = pyrBlend(imgA, imgB, mask).^gamma;
+    imwrite(imgOut.^invGamma, 'banterle_mix.png');
     
     BTMO_which_operator = 'BanterleTMO';
 else

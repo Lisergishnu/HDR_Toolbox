@@ -28,9 +28,8 @@ function hdrv = hdrvopen(hdrv)
 %
 
 if(hdrv.streamOpen == 0) 
-    hdrv.permission = permission;
     
-    if(permission == 'r' && (strfind(hdrv.type, 'TYPE_HDR_VIDEO') == 1))
+    if(strfind(hdrv.type, 'TYPE_HDR_VIDEO') == 1)
         if(~isempty(hdrv.streamTMO))
            open(ldrv.streamTMO);            
         end
