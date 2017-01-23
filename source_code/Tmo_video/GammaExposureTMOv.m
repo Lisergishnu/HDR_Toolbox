@@ -85,7 +85,7 @@ if(strcmp(ext, 'avi') == 1 | strcmp(ext, 'mp4') == 1)
     open(writerObj);
 end
 
-hdrv = hdrvopen(hdrv, 'r');
+hdrv = hdrvopen(hdrv);
 
 exposure = 2^tmo_fstop;
 
@@ -94,18 +94,17 @@ for i=1:hdrv.totalFrames
     disp(['Processing frame ',num2str(i)]);
     [frame, hdrv] = hdrvGetFrame(hdrv, i);
     
-    %Only physical values
+    %only physical values
     frame = RemoveSpecials(frame);
     frame(frame < 0) = 0;    
             
-    %Gamma/sRGB encoding
+    %gamma/sRGB encoding
     if(bsRGB)
         frameOut = ClampImg(ConvertRGBtosRGB(frame * exposure, 0), 0, 1);
     else
         frameOut = ClampImg(GammaTMO(frame, tmo_gamma, tmo_fstop, 0), 0, 1);
     end
     
-    %Storing 
     if(bVideo)
         writeVideo(writerObj, frameOut);
     else

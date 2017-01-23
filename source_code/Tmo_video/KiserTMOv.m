@@ -21,7 +21,7 @@ function KiserTMOv(hdrv, filenameOutput, tmo_alpha_coeff, tmo_dn_clamping, tmo_g
 %           help. Depending on the version of MATLAB some profiles may be not
 %           be present.
 %
-%     Copyright (C) 2013-15 Francesco Banterle
+%     Copyright (C) 2013-17 Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -83,7 +83,7 @@ if(strcmp(ext, 'avi') == 1 | strcmp(ext, 'mp4') == 1)
     open(writerObj);
 end
 
-hdrv = hdrvopen(hdrv, 'r');
+hdrv = hdrvopen(hdrv);
 
 disp('Tone Mapping...');
 tmo_alpha_coeff_c = 1.0 - tmo_alpha_coeff;
@@ -95,13 +95,13 @@ for i=1:hdrv.totalFrames
     disp(['Processing frame ', num2str(i)]);
     [frame, hdrv] = hdrvGetFrame(hdrv, i);
         
-    %Only physical values
+    %only physical values
     frame = RemoveSpecials(frame);
     frame(frame < 0) = 0;
     
     if(tmo_dn_clamping)%Clamping black and white levels
         L = RemoveSpecials(lum(frame));
-        %computing CDF's histogram 
+        %compute CDF's histogram 
         [histo, bound, ~] = HistogramHDR(L, 256, 'log10', [], 1);  
         histo_cdf = cumsum(histo);
         histo_cdf = histo_cdf/max(histo_cdf(:));
@@ -116,7 +116,7 @@ for i=1:hdrv.totalFrames
         frame = frame - minL;
     end
    
-    %computing statistics for the current frame
+    %compute statistics for the current frame
     L = lum(frame);
     Lav = logMean(L);
     A = max(L(:)) - Lav;
@@ -138,7 +138,7 @@ for i=1:hdrv.totalFrames
     %tone mapping
     [frameOut, ~, ~] = ReinhardTMO(frame, an);
 
-    %Gamma/sRGB encoding
+    %gamma/sRGB encoding
     if(bsRGB)
         frameOut = ClampImg(ConvertRGBtosRGB(frameOut, 0), 0, 1);
     else
@@ -151,7 +151,7 @@ for i=1:hdrv.totalFrames
         imwrite(frameOut, [name, sprintf('%.10d',i), '.', ext]);
     end
     
-    %updating for the next frame
+    %update statistics for the next frame
     Aprev = A;
     Bprev = B;
     aprev = a;   

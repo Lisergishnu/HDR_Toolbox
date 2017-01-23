@@ -24,7 +24,7 @@ function StaticTMOv(hdrv, filenameOutput, tmo_operator, tmo_gamma, tmo_quality, 
 %       Output:
 %           -frameOut: the tone mapped frame
 %
-%     Copyright (C) 2013-14  Francesco Banterle
+%     Copyright (C) 2013-17  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -80,28 +80,27 @@ if(strcmp(ext, 'avi') == 1 | strcmp(ext, 'mp4') == 1)
     open(writerObj);
 end
 
-hdrv = hdrvopen(hdrv, 'r');
+hdrv = hdrvopen(hdrv);
 
 disp('Tone Mapping...');
 for i=1:hdrv.totalFrames
     disp(['Processing frame ', num2str(i)]);
     [frame, hdrv] = hdrvGetFrame(hdrv, i);
     
-    %Only physical values
+    %only physical values
     frame = RemoveSpecials(frame);
     frame(frame < 0) = 0;    
     
-    %Tone mapping
+    %tone map
     frameOut = RemoveSpecials(tmo_operator(frame)); 
     
-    %Gamma/sRGB encoding
+    %gamma/sRGB encoding
     if(bsRGB)
         frameOut = ClampImg(ConvertRGBtosRGB(frameOut, 0), 0, 1);
     else
         frameOut = ClampImg(GammaTMO(frameOut, tmo_gamma, 0, 0), 0, 1);
     end
     
-    %Storing 
     if(bVideo)
         writeVideo(writerObj, frameOut);
     else

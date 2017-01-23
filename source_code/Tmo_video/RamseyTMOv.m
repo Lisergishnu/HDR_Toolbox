@@ -19,7 +19,7 @@ function RamseyTMOv(hdrv, filenameOutput, tmo_alpha_beta_gamma, tmo_white, tmo_g
 %           help. Depending on the version of MATLAB some profiles may be not
 %           be present.
 %
-%     Copyright (C) 2013-15 Francesco Banterle
+%     Copyright (C) 2013-17 Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -89,7 +89,7 @@ if(strcmp(ext, 'avi') == 1 | strcmp(ext, 'mp4') == 1)
     open(writerObj);
 end
 
-hdrv = hdrvopen(hdrv, 'r');
+hdrv = hdrvopen(hdrv);
 
 disp('Computing statistics...');
 
@@ -101,15 +101,16 @@ for i=1:hdrv.totalFrames
     frame = RemoveSpecials(frame);
     frame(frame < 0) = 0;    
     
-    %computing log-mean
+    %compute log-mean
     L_avg(i) = logMean(lum(frame));
 end
 
 L_a = zeros(hdrv.totalFrames, 1);
 a = zeros(hdrv.totalFrames, 1);
+
 NumFrames = zeros(hdrv.totalFrames, 1);
 for i=1:hdrv.totalFrames
-    %computing L_a(i)
+    %compute L_a(i)
     L_f_i = L_avg(i);
     range = 0.1 * L_f_i;
     minL = L_f_i - range;
@@ -134,7 +135,7 @@ for i=1:hdrv.totalFrames
     end
     L_a(i) = exp(total_log / NumFrames(i));
     
-    %computing a(i)
+    %compute a(i)
     alpha = tmo_alpha_beta_gamma(1);
     beta = tmo_alpha_beta_gamma(2);
     gamma = tmo_alpha_beta_gamma(3);
@@ -162,7 +163,7 @@ for i=1:hdrv.totalFrames
     end
     a_n = a_n / NumFrames(i);
     
-    %Tone mapping
+    %tone map the current frame
     L = lum(frame);
     
     L_prime = a_n / L_a(i) * L;
@@ -170,14 +171,13 @@ for i=1:hdrv.totalFrames
         
     frameOut = ChangeLuminance(frame, L, Ld);
     
-    %Gamma/sRGB encoding
+    %gamma/sRGB encoding
     if(bsRGB)
         frameOut = ClampImg(ConvertRGBtosRGB(frameOut, 0), 0, 1);
     else
         frameOut = ClampImg(GammaTMO(frameOut, tmo_gamma, 0, 0), 0, 1);
     end
     
-    %Storing 
     if(bVideo)
         writeVideo(writerObj, frameOut);
     else

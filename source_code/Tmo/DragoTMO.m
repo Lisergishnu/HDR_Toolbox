@@ -46,7 +46,7 @@ if(~exist('d_b', 'var'))
     d_b = 0.85;
 end
 
-%Luminance channel
+%compute luminance 
 L = lum(img);
 
 Lwa = logMean(L);
@@ -61,7 +61,7 @@ p1 = (d_Ld_Max / 100.0) / (log10(1 + LMax_s));
 p2 = log(1.0 + L_s) ./ log(2.0 + 8.0 * ((L_s / LMax_s).^c1));
 Ld = p1 * p2;
 
-%Changing luminance
+%change luminance
 imgOut = ChangeLuminance(img, L, Ld);
 
 disp('Note that tone mapped images with DragoTMO should be gamma corrected with function GammaDrago.m');
