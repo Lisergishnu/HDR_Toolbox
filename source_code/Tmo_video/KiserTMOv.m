@@ -99,7 +99,8 @@ for i=1:hdrv.totalFrames
     frame = RemoveSpecials(frame);
     frame(frame < 0) = 0;
     
-    if(tmo_dn_clamping)%Clamping black and white levels
+    if(tmo_dn_clamping)
+        %clamp black and white levels
         L = RemoveSpecials(lum(frame));
         %compute CDF's histogram 
         [histo, bound, ~] = HistogramHDR(L, 256, 'log10', [], 1);  
