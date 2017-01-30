@@ -1,4 +1,4 @@
-function [imgOut, pAlpha, pWhite] = ReinhardTMO(img, pAlpha, pWhite, pLocal, pPhi)
+function [imgOut, pAlpha, pWhite] = ReinhardTMO(img, pAlpha, pWhite, pLocal, pPhi, Lwa)
 %
 %
 %      [imgOut, pAlpha, pWhite] = ReinhardTMO(img, pAlpha, pWhite, pLocal, pPhi)
@@ -21,7 +21,7 @@ function [imgOut, pAlpha, pWhite] = ReinhardTMO(img, pAlpha, pWhite, pLocal, pPh
 %           -pAlpha: as in input
 %           -pLocal: as in input 
 %
-%     Copyright (C) 2011-15  Francesco Banterle
+%     Copyright (C) 2011-17  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -43,8 +43,6 @@ function [imgOut, pAlpha, pWhite] = ReinhardTMO(img, pAlpha, pWhite, pLocal, pPh
 %
 
 check13Color(img);
-
-check3Color(img);
 
 %Luminance channel
 L = lum(img);
@@ -78,7 +76,13 @@ else
 end
 
 %compute logarithmic mean
-Lwa = logMean(L);
+if(~exist('Lwa', 'var'))
+    Lwa = logMean(L);
+else
+    if(Lwa < 0.0)
+        Lwa = logMean(L);        
+    end
+end
 
 %scale luminance using alpha and logarithmic mean
 Lscaled = (pAlpha * L) / Lwa;

@@ -1,7 +1,7 @@
-function KiserTMOv(hdrv, filenameOutput, tmo_alpha_coeff, tmo_dn_clamping, tmo_gamma, tmo_quality, tmo_video_profile)
+function [a_vec, a_vec_flt] = KiserTMOv(hdrv, filenameOutput, tmo_alpha_coeff, tmo_dn_clamping, tmo_white, tmo_gamma, tmo_quality, tmo_video_profile)
 %
 %
-%      KiserTMOv(hdrv, filenameOutput, tmo_alpha_coeff, tmo_dn_clamping, tmo_gamma, tmo_quality, tmo_video_profile)
+%      KiserTMOv(hdrv, filenameOutput, tmo_alpha_coeff, tmo_dn_clamping, tmo_white, tmo_gamma, tmo_quality, tmo_video_profile)
 %
 %
 %       Input:
@@ -13,6 +13,7 @@ function KiserTMOv(hdrv, filenameOutput, tmo_alpha_coeff, tmo_dn_clamping, tmo_g
 %           costants in the paper (Equation 3a, 3b, and 3c)
 %           -tmo_dn_clamping: a boolean value (0 or 1) for setting black
 %           and white levels clamping
+%           -tmo_white: white point;
 %           -tmo_gamma: gamma for encoding the frame
 %           -tmo_quality: the output quality in [1,100]. 100 is the best quality
 %           1 is the lowest quality.%
@@ -49,6 +50,14 @@ end
 
 if(~exist('tmo_dn_clamping', 'var'))
     tmo_dn_clamping = 0;
+end
+
+if(~exist('tmo_white', 'var'))
+    tmo_white = 1e6;
+end
+
+if(tmo_white <= 0.0)
+    tmo_white = 1e6;
 end
 
 if(~exist('tmo_gamma', 'var'))
@@ -91,6 +100,13 @@ tmo_alpha_coeff_c = 1.0 - tmo_alpha_coeff;
 beta_clamping   = 0.999;
 beta_clamping_c = (1.0 - beta_clamping);
 
+a_vec = [];
+a_vec_flt = [];
+
+maxLprev = 0;
+
+mkdir(name);
+
 for i=1:hdrv.totalFrames
     disp(['Processing frame ', num2str(i)]);
     [frame, hdrv] = hdrvGetFrame(hdrv, i);
@@ -120,10 +136,12 @@ for i=1:hdrv.totalFrames
     %compute statistics for the current frame
     L = lum(frame);
     Lav = logMean(L);
-    A = max(L(:)) - Lav;
+    maxL = max(L(:));
+    A = maxL - Lav;
     B = Lav - min(L(:));
    
     if(i == 1)
+        maxLprev = maxL;
         Aprev = A;
         Bprev = B;
         aprev = 0.18 * 2^(2 * (B - A) / (A + B));
@@ -131,13 +149,23 @@ for i=1:hdrv.totalFrames
     
     %temporal average
     An = tmo_alpha_coeff_c * Aprev + tmo_alpha_coeff * A;
+    Aprev = An;
+    
     Bn = tmo_alpha_coeff_c * Bprev + tmo_alpha_coeff * B;
-
-    a = 0.18 * 2^(2 * (Bn - An) / (An + Bn));
+    Bprev = Bn;
+            
+    a = SceneKey(An, Bn);
     an = tmo_alpha_coeff_c * aprev + tmo_alpha_coeff * a;
+    aprev = an;
+    
+    a_vec = [a_vec, maxL];
+    maxLn =  0.5 * maxLprev + 0.5 *maxL;
+    maxLprev = maxLn;
+    a_vec_flt = [a_vec_flt, maxLn ];
+    
     
     %tone mapping
-    [frameOut, ~, ~] = ReinhardTMO(frame, an);
+    [frameOut, ~, ~] = ReinhardTMO(frame, an, tmo_white, 'global');
 
     %gamma/sRGB encoding
     if(bsRGB)
@@ -149,7 +177,7 @@ for i=1:hdrv.totalFrames
     if(bVideo)
         writeVideo(writerObj, frameOut);
     else
-        imwrite(frameOut, [name, sprintf('%.10d',i), '.', ext]);
+        imwrite(frameOut, [name, '/frame_', sprintf('%.10d',i), '.', ext]);
     end
     
     %update statistics for the next frame
@@ -165,4 +193,8 @@ end
 
 hdrvclose(hdrv);
 
+end
+
+function a = SceneKey(An, Bn)
+    a = 0.18 * 2^(2 * (Bn - An) / (An + Bn));
 end

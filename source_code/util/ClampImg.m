@@ -1,7 +1,7 @@
-function img = ClampImg(img, a, b)
+function out = ClampImg(img, a, b)
 %
 %
-%       img = ClampImg(img, a, b)
+%       out = ClampImg(img, a, b)
 %
 %
 %       Image is clamped if its values are over [a,b]
@@ -12,7 +12,7 @@ function img = ClampImg(img, a, b)
 %           -b: the upper bound
 %           
 %       Output:
-%           -img: output clamped image
+%           -out: output clamped image
 %
 %     Copyright (C) 2011  Francesco Banterle
 % 
@@ -30,7 +30,9 @@ function img = ClampImg(img, a, b)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-img(img < a) = a;
-img(img > b) = b;
+out = img;
+
+out(img < a) = a;
+out(img > b) = b;
 
 end

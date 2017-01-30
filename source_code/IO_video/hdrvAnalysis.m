@@ -1,4 +1,4 @@
-function [hdrv, stats_v, hists_v] = hdrvAnalysis(hdrv, percentile, crop_rect)
+function [hdrv, stats_v, hists_v] = hdrvAnalysis(hdrv, percentile, crop_rect, bHistogram)
 %
 %         [hdrv, stats_v, hists_v] = hdrvAnalysis(hdrv, percentile)
 %
@@ -9,13 +9,14 @@ function [hdrv, stats_v, hists_v] = hdrvAnalysis(hdrv, percentile, crop_rect)
 %           -hdrv: a open HDR video structure
 %           -percentile: the percentile for robust statistics
 %           -crop_rect:
+%           -bHistogram:
 %
 %        Output:
 %           -hdrv  : a close HDR video structure
 %           -stats_v  : harmonic mean of each frame
 %           -hists_v : max of each frame
 %
-%     Copyright (C) 2013-15  Francesco Banterle
+%     Copyright (C) 2013-17  Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -53,20 +54,13 @@ else
     end
 end
 
-nBins = 256;
+nBins = 4096;
 
 stats_v = zeros(hdrv.totalFrames, 6);
 hists_v = zeros(hdrv.totalFrames, nBins);
-bClose = 0;
 
-if(hdrv.streamOpen == 0)
-    hdrv = hdrvopen(hdrv);
-    bClose = 1;
-end
-
-disp('Video Analysis...');
+hdrv = hdrvopen(hdrv);
 for i=1:hdrv.totalFrames
-    disp(['Processing Frame: ', num2str(i)]);
     [frame, hdrv] = hdrvGetFrame(hdrv, i);    
         
     if(bCR)
@@ -76,8 +70,9 @@ for i=1:hdrv.totalFrames
     end
     
     %remove specials
-    frame = RemoveSpecials(frame);    
-    %remove specials
+    frame = RemoveSpecials(frame); 
+    
+    %avoid negative values
     L = lum(frame);
     indx = find(L >= 0.0);
     if(~isempty(indx))
@@ -86,15 +81,13 @@ for i=1:hdrv.totalFrames
         stats_v(i, 3) = MaxQuart(L(indx), 1 - percentile);
         stats_v(i, 4) = MaxQuart(L(indx), percentile);
         stats_v(i, 5) = mean(L(indx));
-        stats_v(i, 6) = logMean(L(indx));        
-        hists_v(i, :) = HistogramHDR(L(indx), nBins, 'log10', [-6, 6], 0, 0, 1e-6);
+        stats_v(i, 6) = logMean(L(indx));       
+        if(bHistogram)
+            hists_v(i, :) = HistogramHDR(L(indx), nBins, 'log10', [-6, 6], 0, 0, 1e-6);
+        end
     end
 end
 
-disp('done');
-
-if(bClose)
-    hdrv = hdrvclose(hdrv);
-end
+hdrv = hdrvclose(hdrv);
 
 end

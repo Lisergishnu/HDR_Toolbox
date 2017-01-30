@@ -1,7 +1,7 @@
-function RamseyTMOv(hdrv, filenameOutput, tmo_alpha_beta_gamma, tmo_white, tmo_gamma, tmo_quality, tmo_video_profile)
+function [L_h, L_ha] = RamseyTMOv(hdrv, filenameOutput, tmo_alpha, tmo_white, tmo_gamma, tmo_quality, tmo_video_profile)
 %
 %
-%      RamseyTMOv(hdrv, filenameOutput, tmo_alpha_beta_gamma, tmo_white, tmo_quality, tmo_video_profile)
+%      [L_h, L_ha] = RamseyTMOv(hdrv, filenameOutput, tmo_alpha, tmo_white, tmo_quality, tmo_video_profile)
 %
 %
 %       Input:
@@ -9,7 +9,7 @@ function RamseyTMOv(hdrv, filenameOutput, tmo_alpha_beta_gamma, tmo_white, tmo_g
 %           structure
 %           -filenameOutput: output filename (if it has an image extension,
 %           single files will be generated)
-%           -tmo_alpha_beta_gamma:
+%           -tmo_alpha:
 %           -tmo_white:
 %           -tmo_gamma: gamma for encoding the frame
 %           -tmo_quality: the output quality in [1,100]. 100 is the best quality
@@ -41,12 +41,8 @@ function RamseyTMOv(hdrv, filenameOutput, tmo_alpha_beta_gamma, tmo_white, tmo_g
 %
 %
 
-if(~exist('tmo_alpha_beta_gamma', 'var'))
-    tmo_alpha_beta_gamma = [];
-end
-
-if(isempty(tmo_alpha_beta_gamma))
-    tmo_alpha_beta_gamma = [1000.0, 100.0, 3.0];
+if(~exist('tmo_alpha', 'var'))
+    tmo_alpha = 0.18;
 end
 
 if(~exist('tmo_white', 'var'))
@@ -89,38 +85,28 @@ if(strcmp(ext, 'avi') == 1 | strcmp(ext, 'mp4') == 1)
     open(writerObj);
 end
 
+%compute statistics
+[hdrv, stats_v, ~] = hdrvAnalysis(hdrv, 0.99, [], 0);
+
 hdrv = hdrvopen(hdrv);
 
-disp('Computing statistics...');
+L_h = stats_v(:, 6);
+L_ha = zeros(size(L_h));
 
-L_avg = zeros(hdrv.totalFrames, 1);
+disp('Tone Mapping...');
 for i=1:hdrv.totalFrames
+    disp(['Processing frame ', num2str(i)]);
     [frame, hdrv] = hdrvGetFrame(hdrv, i);
-    
-    %only physical values
-    frame = RemoveSpecials(frame);
-    frame(frame < 0) = 0;    
-    
-    %compute log-mean
-    L_avg(i) = logMean(lum(frame));
-end
-
-L_a = zeros(hdrv.totalFrames, 1);
-a = zeros(hdrv.totalFrames, 1);
-
-NumFrames = zeros(hdrv.totalFrames, 1);
-for i=1:hdrv.totalFrames
-    %compute L_a(i)
-    L_f_i = L_avg(i);
-    range = 0.1 * L_f_i;
-    minL = L_f_i - range;
-    maxL = L_f_i + range;
+                
+    %compute number of frames for smoothing
+    minLhi = L_h(i) * 0.9;
+    maxLhi = L_h(i) * 1.1;
     j = i;
     while((j > 1) && ((i - j) < 60))
-        if((L_f_i > minL) && (L_f_i < maxL))
+        if((L_h(j) > minLhi) && (L_h(j) < maxLhi))
             j = j - 1;
         else
-            if((i - j) < 5)
+            if((i - j) < 4)
                 j = j - 1;
             else
                 break;
@@ -128,49 +114,19 @@ for i=1:hdrv.totalFrames
         end
     end
     
-    NumFrames(i) = i - j + 1;
-    total_log = 0;
+    %compute L_ha
     for k=i:-1:j
-        total_log = total_log + log(L_avg(k));
+        L_ha(i) = L_ha(i) + log(L_h(k));
     end
-    L_a(i) = exp(total_log / NumFrames(i));
+    L_ha(i) = exp(L_ha(i) / (i - j + 1));   
     
-    %compute a(i)
-    alpha = tmo_alpha_beta_gamma(1);
-    beta = tmo_alpha_beta_gamma(2);
-    gamma = tmo_alpha_beta_gamma(3);
-    a(i) = - alpha * atan(beta * (L_a(i) - gamma)) + alpha * pi * 0.5;
-end
-
-
-disp('Ok');
-
-disp('Tone Mapping...');
-for i=1:hdrv.totalFrames
-    disp(['Processing frame ', num2str(i)]);
-    [frame, hdrv] = hdrvGetFrame(hdrv, i);
-
     %only physical values
     frame = RemoveSpecials(frame);
     frame(frame < 0) = 0;   
     
-    %temporal statistics
-    a_n = 0.0;
-    j = i;
-    while((i - j) < NumFrames(i))
-        a_n = a_n + a(j);
-        j = j - 1;
-    end
-    a_n = a_n / NumFrames(i);
-    
     %tone map the current frame
-    L = lum(frame);
-    
-    L_prime = a_n / L_a(i) * L;
-    Ld = L_prime .* (1.0 + L_prime / (tmo_white^2)) ./ (1.0 + L_prime);
+    frameOut = ReinhardTMO(frame, tmo_alpha, tmo_white, 'global', -1, L_ha(i));
         
-    frameOut = ChangeLuminance(frame, L, Ld);
-    
     %gamma/sRGB encoding
     if(bsRGB)
         frameOut = ClampImg(ConvertRGBtosRGB(frameOut, 0), 0, 1);
