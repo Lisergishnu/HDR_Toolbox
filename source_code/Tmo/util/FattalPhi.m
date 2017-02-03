@@ -29,11 +29,11 @@ function imgOut = FattalPhi(gradX, gradY, fAlpha, fBeta)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-grad = sqrt(gradX.^2+gradY.^2);
+grad_mag = sqrt(gradX.^2 + gradY.^2);
 
-t = (grad/fAlpha).^(fBeta-1);
+t = (grad_mag.^(fBeta - 1.0)) * (fAlpha.^(1.0 - fBeta));
 
-indx = find(t==inf);
+indx = find(t == inf);
 
 if(~isempty(indx))
     imgOut = RemoveSpecials(t);

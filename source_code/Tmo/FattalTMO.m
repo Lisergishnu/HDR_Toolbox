@@ -58,7 +58,13 @@ Lori = lum(img);
 
 L = log(Lori + 1e-6);
 
-%Computing Gaussian Pyramid + Gradient
+%set boundaries
+L(1,:) = L(2,:);
+L(end,:) = L(end-1,:);
+L(:,1) = L(:,2);
+L(:,end) = L(:,end-1);
+
+%compute Gaussian Pyramid + Gradient
 [r,c]   = size(L);
 numPyr  = round(log2(min([r, c]))) - log2(32);
 kernelX = [0, 0, 0; -1, 0, 1; 0,  0, 0];
@@ -68,34 +74,33 @@ kernel = [1, 4, 6, 4, 1]' * [1, 4, 6, 4, 1];
 kernel = kernel / sum(kernel(:));
 
 %Generation of the pyramid
-G = [[], struct('fx', imfilter(L, kernelX, 'same') / 2,'fy', imfilter(L, kernelY, 'same') / 2)];
-G2 = sqrt(G(1).fx.^2 + G(1).fy.^2);
-fAlpha = 0.1 * mean(G2(:));
-
-imgTmp = L;
-for i=1:numPyr
-    imgTmp = imresize(conv2(imgTmp, kernel, 'same'), 0.5, 'bilinear');
-    Fx = imfilter(imgTmp, kernelX, 'same') / (2^(i + 1));
-    Fy = imfilter(imgTmp, kernelY, 'same') / (2^(i + 1));
+L_tmp = L;
+G = [];
+for i=0:numPyr
+    Fx = imfilter(L_tmp, kernelX, 'same') / (2^(i + 1));
+    Fy = imfilter(L_tmp, kernelY, 'same') / (2^(i + 1));
     G = [G, struct('fx', Fx, 'fy', Fy)];
+    L_tmp = imresize(imfilter(L_tmp, kernel, 'same'), 0.5, 'bilinear');    
 end
 
 %Generation of the Attenuation mask
-Phi_kp1 = FattalPhi(G(numPyr+1).fx, G(numPyr+1).fy, fAlpha, fBeta);
+G2 = sqrt(G(1).fx.^2 + G(1).fy.^2);
+fAlpha = 0.005 * mean(G2(:));
+Phi_kp1 = FattalPhi(G(numPyr + 1).fx, G(numPyr + 1).fy, fAlpha, fBeta);
 
 for k=numPyr:-1:1
-    [r,c] = size(G(k).fx);
+    [r, c] = size(G(k).fx);
     Phi_k = FattalPhi(G(k).fx, G(k).fy, fAlpha, fBeta);
-    Phi_kp1 = imresize(Phi_kp1, [r,c], 'bilinear') .* Phi_k;
+    Phi_kp1 = imresize(Phi_kp1, [r, c], 'bilinear') .* Phi_k;
 end
 
 %Calculating the divergence with backward differences
 G = struct('fx', G(1).fx .* Phi_kp1, 'fy', G(1).fy .* Phi_kp1);
 kernelX = [0, 0, 0; -1, 1, 0; 0,  0, 0];
 kernelY = [0, 0, 0;  0, 1, 0; 0, -1, 0];
-dx = imfilter(G(1).fx, kernelX, 'same');
-dy = imfilter(G(1).fy, kernelY, 'same');
-divG = RemoveSpecials(dx + dy);
+dx = imfilter(G(1).fx, kernelX);%, 'same');
+dy = imfilter(G(1).fy, kernelY);%, 'same');
+divG = dx + dy;
 
 %Solving Poisson equation
 Ld_p = PoissonSolver(divG);

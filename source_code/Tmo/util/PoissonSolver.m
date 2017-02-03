@@ -36,7 +36,12 @@ n = r * c;
 b = -reshape(f, r * c, 1);
 
 %Build A matrix
-A = spdiags((4 + smoothingCost) * ones(n, 1), 0, n, n);
+if(smoothingCost > 0.0)
+    A = spdiags((4 + smoothingCost) * ones(n, 1), 0, n, n);
+else
+    A = spdiags(4 * ones(n, 1), 0, n, n);
+end
+
 T = ones(n,1);
 O = T;
 T(1:r:n) = 0;
