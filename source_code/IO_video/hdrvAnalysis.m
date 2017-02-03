@@ -1,6 +1,6 @@
 function [hdrv, stats_v, hists_v] = hdrvAnalysis(hdrv, percentile, crop_rect, bHistogram)
 %
-%         [hdrv, stats_v, hists_v] = hdrvAnalysis(hdrv, percentile)
+%         [hdrv, stats_v, hists_v] = hdrvAnalysis(hdrv, percentile, crop_rect, bHistogram)
 %
 %        This function computes the statistics of all frames of an HDR
 %        video.

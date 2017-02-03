@@ -1,19 +1,21 @@
 
-function imgOut = FattalTMO(img, fBeta, bNormalization)
+function [imgOut, Ld_p, minVal, maxVal] = FattalTMO(img, fBeta, cc_s, bNormalization)
 %
-%       imgOut = FattalTMO(img, fBeta)
+%       [imgOut, Ld, minVal, maxVal] = FattalTMO(img, fBeta, cc_s, bNormalization)
 %
 %
 %       Input:
 %           -img: HDR image
 %           -fBeta: 
+%           -cc_s:
 %           -bNormalization: a flag for applying normalization
 %            at the end with robust statistics
 %
 %       Output:
 %           -imgOut: tone mapped image
+%           -maxVal: 
 % 
-%     Copyright (C) 2010 Francesco Banterle
+%     Copyright (C) 2010-2017 Francesco Banterle
 %  
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -43,6 +45,10 @@ if(~exist('fBeta', 'var'))
     fBeta = 0.95;
 end
 
+if(~exist('cc_s', 'var'))
+    cc_s = 0.6;
+end
+
 if(~exist('bNormalization', 'var'))
     bNormalization = 1;
 end
@@ -68,7 +74,7 @@ fAlpha = 0.1 * mean(G2(:));
 
 imgTmp = L;
 for i=1:numPyr
-    imgTmp=imresize(conv2(imgTmp,kernel,'same'), 0.5,'bilinear');
+    imgTmp = imresize(conv2(imgTmp, kernel, 'same'), 0.5, 'bilinear');
     Fx = imfilter(imgTmp, kernelX, 'same') / (2^(i + 1));
     Fy = imfilter(imgTmp, kernelY, 'same') / (2^(i + 1));
     G = [G, struct('fx', Fx, 'fy', Fy)];
@@ -92,16 +98,21 @@ dy = imfilter(G(1).fy, kernelY, 'same');
 divG = RemoveSpecials(dx + dy);
 
 %Solving Poisson equation
-Ld = exp(PoissonSolver(divG));
+Ld_p = PoissonSolver(divG);
+Ld = exp(Ld_p);
 
 if(bNormalization)
-    Ld = ClampImg(Ld / max(Ld(:)), 0, 1);
+    maxVal = max(Ld(:));
+    minVal = min(Ld(:));
+    Ld = ClampImg((Ld - minVal) / ( maxVal - minVal), 0, 1);
+else
+   maxVal = 1;
+   minVal = 0;
 end
-
 
 %Changing luminance
 imgOut = ChangeLuminance(img, Lori, Ld);
 
-imgOut = ColorCorrection(imgOut, 0.4);
+imgOut = ColorCorrection(imgOut, cc_s);
 
 end

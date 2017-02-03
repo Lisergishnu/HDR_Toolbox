@@ -1,11 +1,12 @@
-function imgOut = VanHaterenTMO(img)
+function imgOut = VanHaterenTMO(img, pupil_area)
 %
 %
-%        imgOut = VanHaterenTMO(img)
+%        imgOut = VanHaterenTMO(img, pupil_area)
 %
 %
 %        Input:
 %           -img: input HDR image
+%           -pupil_area:
 %
 %        Output:
 %           -imgOut: tone mapped image
@@ -13,7 +14,7 @@ function imgOut = VanHaterenTMO(img)
 %     This is the stable version of the Van Hateren 2006 algorithm, this is
 %     not suitable for HDR videos.
 % 
-%     Copyright (C) 2010-15  Francesco Banterle
+%     Copyright (C) 2010-17  Francesco Banterle
 %
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -38,7 +39,14 @@ check13Color(img);
 
 checkNegative(img);
 
-pupil_area = 10; %fixed pupil area 10 mm^2
+if(~exist('pupil_area', 'var'))
+    pupil_area = -1.0;
+end
+
+if(pupil_area <= 0.0)
+    pupil_area = 10; %fixed pupil area 10 mm^2
+end
+
 k_beta = 1.6e-4; % td/ms
 a_C = 9e-2;
 C_beta = 2.8e-3; % 1/ms

@@ -91,12 +91,10 @@ end
 hdrv = hdrvopen(hdrv);
 
 L_h = stats_v(:, 6);
-L_ha = zeros(size(L_h));
 
 disp('Tone Mapping...');
 for i=1:hdrv.totalFrames
     disp(['Processing frame ', num2str(i)]);
-    [frame, hdrv] = hdrvGetFrame(hdrv, i);
                 
     %compute number of frames for smoothing
     minLhi = L_h(i) * 0.9;
@@ -115,24 +113,30 @@ for i=1:hdrv.totalFrames
     end
     
     %compute L_ha
+    L_ha = 0.0;
     for k=i:-1:j
-        L_ha(i) = L_ha(i) + log(L_h(k));
+        L_ha = L_ha + log(L_h(k));
     end
-    L_ha(i) = exp(L_ha(i) / (i - j + 1));   
+    L_ha = exp(L_ha / (i - j + 1));   
     
+    %fetch the i-th frame
+    [frame, hdrv] = hdrvGetFrame(hdrv, i);
+
     %only physical values
     frame = RemoveSpecials(frame);
     frame(frame < 0) = 0;   
     
     %tone map the current frame
-    frameOut = ReinhardTMO(frame, tmo_alpha, tmo_white, 'global', -1, L_ha(i));
+    frameOut = ReinhardTMO(frame, tmo_alpha, tmo_white, 'global', -1, L_ha);
         
     %gamma/sRGB encoding
     if(bsRGB)
-        frameOut = ClampImg(ConvertRGBtosRGB(frameOut, 0), 0, 1);
+        frameOut = ConvertRGBtosRGB(frameOut, 0);
     else
-        frameOut = ClampImg(GammaTMO(frameOut, tmo_gamma, 0, 0), 0, 1);
+        frameOut = GammaTMO(frameOut, tmo_gamma, 0, 0);
     end
+    
+    frameOut = ClampImg(frameOut, 0.0, 1.0);
     
     if(bVideo)
         writeVideo(writerObj, frameOut);

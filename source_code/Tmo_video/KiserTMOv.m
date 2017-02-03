@@ -1,7 +1,7 @@
-function [a_vec, a_vec_flt] = KiserTMOv(hdrv, filenameOutput, tmo_alpha_coeff, tmo_dn_clamping, tmo_white, tmo_gamma, tmo_quality, tmo_video_profile)
+function [a_vec, a_vec_flt] = KiserTMOv(hdrv, filenameOutput, tmo_alpha, tmo_dn_clamping, tmo_white, tmo_gamma, tmo_quality, tmo_video_profile)
 %
 %
-%      KiserTMOv(hdrv, filenameOutput, tmo_alpha_coeff, tmo_dn_clamping, tmo_white, tmo_gamma, tmo_quality, tmo_video_profile)
+%      KiserTMOv(hdrv, filenameOutput, tmo_alpha, tmo_dn_clamping, tmo_white, tmo_gamma, tmo_quality, tmo_video_profile)
 %
 %
 %       Input:
@@ -9,7 +9,7 @@ function [a_vec, a_vec_flt] = KiserTMOv(hdrv, filenameOutput, tmo_alpha_coeff, t
 %           structure
 %           -filenameOutput: output filename (if it has an image extension,
 %           single files will be generated)
-%           -tmo_alpha_coeff: \alpha_A, \alpha_B, \alpha_C coefficients
+%           -tmo_alpha: \alpha_A, \alpha_B, \alpha_C coefficients
 %           costants in the paper (Equation 3a, 3b, and 3c)
 %           -tmo_dn_clamping: a boolean value (0 or 1) for setting black
 %           and white levels clamping
@@ -44,8 +44,8 @@ function [a_vec, a_vec_flt] = KiserTMOv(hdrv, filenameOutput, tmo_alpha_coeff, t
 %
 %
 
-if(~exist('tmo_alpha_coeff', 'var'))
-    tmo_alpha_coeff = 0.98;
+if(~exist('tmo_alpha', 'var'))
+    tmo_alpha = 0.98;
 end
 
 if(~exist('tmo_dn_clamping', 'var'))
@@ -95,7 +95,6 @@ end
 hdrv = hdrvopen(hdrv);
 
 disp('Tone Mapping...');
-tmo_alpha_coeff_c = 1.0 - tmo_alpha_coeff;
 
 beta_clamping   = 0.999;
 beta_clamping_c = (1.0 - beta_clamping);
@@ -147,26 +146,27 @@ for i=1:hdrv.totalFrames
         aprev = 0.18 * 2^(2 * (B - A) / (A + B));
     end
     
-    %temporal average
-    An = tmo_alpha_coeff_c * Aprev + tmo_alpha_coeff * A;
+    %leaky integration
+    tmo_alpha_c = 1.0 - tmo_alpha;
+    An = tmo_alpha_c * Aprev + tmo_alpha * A;
     Aprev = An;
     
-    Bn = tmo_alpha_coeff_c * Bprev + tmo_alpha_coeff * B;
+    Bn = tmo_alpha_c * Bprev + tmo_alpha * B;
     Bprev = Bn;
             
     a = SceneKey(An, Bn);
-    an = tmo_alpha_coeff_c * aprev + tmo_alpha_coeff * a;
+    an = tmo_alpha_c * aprev + tmo_alpha * a;
     aprev = an;
-    
-    a_vec = [a_vec, maxL];
-    maxLn =  0.5 * maxLprev + 0.5 *maxL;
-    maxLprev = maxLn;
-    a_vec_flt = [a_vec_flt, maxLn ];
-    
     
     %tone mapping
     [frameOut, ~, ~] = ReinhardTMO(frame, an, tmo_white, 'global');
 
+    %example
+    a_vec = [a_vec, maxL];    
+    maxLn =  0.5 * maxLprev + 0.5 *maxL;
+    maxLprev = maxLn;    
+    a_vec_flt = [a_vec_flt, maxLn ];    
+    
     %gamma/sRGB encoding
     if(bsRGB)
         frameOut = ClampImg(ConvertRGBtosRGB(frameOut, 0), 0, 1);
