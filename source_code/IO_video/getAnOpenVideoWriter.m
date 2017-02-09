@@ -1,18 +1,17 @@
-function imgOut = ColorToGrayFusion(img)
+function writerObj = getAnOpenVideoWriter(name, frameRate, profile, quality)
 %
 %
-%       imgOut = ColorToGrayFusion(img)
+%      writerObj = getAnOpenVideoWriter(name, frameRate, profile, quality)
 %
-%       This function converts an image into a grey-scale using Exposure
-%       Fusion
 %
 %       Input:
-%           -img: a color image
-%
+%           -name: 
+%           -frameRate: 
+%           -quality:
 %       Output:
-%           -imgOut: a grey-scale image
+%           -writerObj:
 %
-%     Copyright (C) 2013  Francesco Banterle
+%     Copyright (C) 2017 Francesco Banterle
 % 
 %     This program is free software: you can redistribute it and/or modify
 %     it under the terms of the GNU General Public License as published by
@@ -28,17 +27,9 @@ function imgOut = ColorToGrayFusion(img)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
 
-[r, c, col] = size(img);
-
-stack = zeros(r, c, 1, col + 1);
-
-for i=1:col
-    stack(:,:,:,i) = img(:,:,i);
-end
- 
-stack(:,:,:,4) = lumHK(img);
-
-weights = [1.0 0.0 1.0];
-imgOut = MertensTMO([], stack, weights, 0);
+writerObj = VideoWriter(name, profile);
+writerObj.FrameRate = frameRate;
+writerObj.Quality = quality;
+open(writerObj);
 
 end
