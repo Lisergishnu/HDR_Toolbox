@@ -75,7 +75,7 @@ if(~isempty(img))
     [imageStack, ~] = CreateLDRStackFromHDR(img, 1);
 else
     if(isa(imageStack, 'single'))
-        imageStack = doubel(imageStack);
+        imageStack = double(imageStack);
     end
 
     if(isa(imageStack, 'uint8'))
